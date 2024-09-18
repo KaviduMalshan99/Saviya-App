@@ -1,0 +1,70 @@
+this is a Expo react native project.name saviya. i am begginer to the expo react native. i want file structure.this is the main flow of my app.
+
+1.saviya logo with page it automaticaly redirect to the 3 skiiplble description pages.(every ppage have image with description and next button.last page have get started button)
+
+after ckick get started open who are you page i have desctption with 2 buttons buyer or a learner.if i click lerner or a buyer go to the login page and if account have go to the dashboard(this shoud have 2 dashboards. because lerner have 1 and buyer hsve 1). if not have account. can click the register button and open register pages.
+
+lerner dashboard(lets think log a lerner)
+after loging redirect to the lerning dashboard and it show various things.that page mainly hhave
+*top left side bar icon and top right cart icon and notification icon.
+*after click side bar icon open side bar from left it have(profile img and name. after that have link to redirect pages.and more...)
+* botton have navs tab with 4 pages icons with names(Courses, events,market home and community pages icons and names.). if i click any icon go to that page.
+
+this is the main structure. did you understand my app file structure?
+
+
+saviya/
+│
+├── assets/
+│   ├── images/
+│   │   └── ... (store your images here)
+│   └── fonts/
+│       └── ... (store your custom fonts here)
+│
+├── components/
+│   ├── Auth/
+│   │   ├── LoginScreen.js
+│   │   ├── RegisterScreen.js
+│   │   └── WhoAreYouScreen.js
+│   ├── Onboarding/
+│   │   ├── OnboardingScreen1.js
+│   │   ├── OnboardingScreen2.js
+│   │   ├── OnboardingScreen3.js
+│   │   └── OnboardingNav.js (for navigation between onboarding screens)
+│   ├── LearnerDashboard/
+│   │   ├── LearnerHome.js
+│   │   ├── Courses.js
+│   │   ├── Events.js
+│   │   ├── MarketHome.js
+│   │   └── Community.js
+│   ├── BuyerDashboard/
+│   │   ├── BuyerHome.js
+│   │   ├── Courses.js
+│   │   ├── Events.js
+│   │   ├── MarketHome.js
+│   │   └── Community.js
+│   └── Common/
+│       ├── Sidebar.js
+│       ├── Navbar.js
+│       ├── CartIcon.js
+│       └── NotificationIcon.js
+│
+├── navigation/
+│   ├── AppNavigator.js (includes main navigation logic)
+│   ├── AuthNavigator.js (handles authentication flow)
+│   └── DashboardNavigator.js (handles learner and buyer dashboards)
+│
+├── screens/
+│   ├── SplashScreen.js
+│   └── ... (other screens if needed)
+│
+├── utils/
+│   ├── api.js (for API calls)
+│   └── helpers.js (utility functions)
+│
+├── App.js
+├── app.json
+└── package.json
+
+
+
