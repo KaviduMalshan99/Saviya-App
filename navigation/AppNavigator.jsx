@@ -8,6 +8,9 @@ import RegisterScreen from '../components/Auth/RegisterScreen';
 import WhoAreYouScreen from '../components/Auth/WhoAreYouScreen';
 import LearnerHome from '../components/LearnerDashboard/LearnerHome';
 import Courses from '../components/LearnerDashboard/Courses';
+import BuyerHome from '../components/BuyerDashBoard/BuyerHome';
+import LoginBuyer1 from '../components/Auth/LoginBuyer1';
+
 
 const Stack = createStackNavigator();
 
@@ -19,8 +22,11 @@ const AppNavigator = () => {
       <Stack.Screen name="Onboarding3" component={OnboardingScreen3} />
       <Stack.Screen name="WhoAreYou" component={WhoAreYouScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="LoginBuyer1" component={LoginBuyer1} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="LearnerHome" component={LearnerHome} />
+      <Stack.Screen name="BuyerHome" component={BuyerHome} />
+
       
     </Stack.Navigator>
   );

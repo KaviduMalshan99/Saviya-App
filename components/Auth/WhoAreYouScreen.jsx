@@ -17,7 +17,7 @@ const WhoAreYouScreen = ({ navigation }) => {
       {/* Buyer Option */}
       <TouchableOpacity
         style={styles.optionButton}
-        onPress={() => navigation.navigate('Login')} // Navigates to Login
+        onPress={() => navigation.navigate('LoginBuyer1')} // Navigates to Login
       >
         <Text style={styles.optionText}>Buyer</Text>
       </TouchableOpacity>
