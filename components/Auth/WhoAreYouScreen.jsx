@@ -21,6 +21,14 @@ const WhoAreYouScreen = ({ navigation }) => {
       >
         <Text style={styles.optionText}>Buyer</Text>
       </TouchableOpacity>
+
+      {/* Become a Fundraiser Button */}
+      <TouchableOpacity
+        style={styles.fundraiserButton}
+        onPress={() => navigation.navigate('TermsConditions1')} // Navigate to Login screen
+      >
+        <Text style={styles.fundraiserText}>Become a Fundraiser</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -32,6 +40,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     padding: 16,
+    position: 'relative',
   },
   title: {
     fontSize: 24,
@@ -48,6 +57,21 @@ const styles = StyleSheet.create({
   optionText: {
     color: '#fff',
     fontSize: 18,
+  },
+  fundraiserButton: {
+    backgroundColor: '#2E8B57', // Light dark green color
+    paddingVertical: 18,
+    paddingHorizontal: 50,
+    borderRadius: 100,
+    position: 'absolute',
+    bottom: 35, // Positions button at the bottom
+    width: '80%', // Adjusts button width
+  },
+  fundraiserText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
