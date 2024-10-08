@@ -1,48 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // for location icon
+import Fundheader from './Fundheader'; // Import Fundheader
+import Fside from './Fside'; // Import Fside
 
 const Fundraiser = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('Fund'); // Active Tab State for Fund
+  const [isMenuVisible, setMenuVisible] = useState(false); // Side menu visibility state
+
+  // Toggle function for the menu visibility
+  const toggleMenu = () => {
+    setMenuVisible(!isMenuVisible);
+  };
 
   return (
     <View style={styles.container}>
-      {/* Tab Container */}
-      <View style={styles.tabContainer}>
-        <Pressable
-          style={[styles.tab, activeTab === 'Post' && styles.activeTab]}
-          onPress={() => navigation.navigate('Posting')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Post' && styles.activeTabText]}>Post</Text>
-        </Pressable>
+      {/* Header */}
+      <Fundheader toggleMenu={toggleMenu} />
 
-        <Pressable
-          style={[styles.tab, activeTab === 'News' && styles.activeTab]}
-          onPress={() => navigation.navigate('News')}
-        >
-          <Text style={[styles.tabText, activeTab === 'News' && styles.activeTabText]}>News</Text>
-        </Pressable>
+      {/* Side Menu */}
+      {isMenuVisible && (
+        <View style={styles.menuOverlay}>
+          <Fside visible={isMenuVisible} toggleMenu={toggleMenu} />
+          <TouchableOpacity style={styles.overlay} onPress={() => setMenuVisible(false)} />
+        </View>
+      )}
 
-        <Pressable
-          style={[styles.tab, activeTab === 'Banking' && styles.activeTab]}
-          onPress={() => navigation.navigate('Banking')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Banking' && styles.activeTabText]}>Banking</Text>
-        </Pressable>
-
-        <Pressable
-          style={[styles.tab, activeTab === 'Fund' && styles.activeTab]}
-          onPress={() => setActiveTab('Fund')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Fund' && styles.activeTabText]}>Funding</Text>
-        </Pressable>
-      </View>
-
-      {/* Popular Fundraiser Section */}
-      <Text style={styles.sectionTitle}>Popular Fundraiser</Text>
+      <Text style={styles.topicTitle}>Our Fundraisers</Text>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-
         {/* Fundraiser Card 1 */}
         <View style={styles.card}>
           <Image
@@ -60,16 +46,15 @@ const Fundraiser = ({ navigation }) => {
           </View>
         </View>
 
-
-                {/* Fundraiser Card 2 */}
-                <View style={styles.card}>
+        {/* Fundraiser Card 2 */}
+        <View style={styles.card}>
           <Image
             source={require('../../assets/images/Otara.jpg')} // Path to the local image
-            style={styles.profileImage}s
+            style={styles.profileImage}
           />
           <View style={styles.cardContent}>
             <Text style={styles.userName}>Mrs. Otara Gunawardhna</Text>
-            <Text style={styles.position}>Co - Funder Embark Pvt.Ltd</Text>
+            <Text style={styles.position}>Co-Founder Embark Pvt.Ltd</Text>
             <Text style={styles.date}>Sun, 20 Oct 2023 Joined</Text>
             <View style={styles.locationContainer}>
               <FontAwesome name="map-marker" size={16} color="gold" />
@@ -78,24 +63,22 @@ const Fundraiser = ({ navigation }) => {
           </View>
         </View>
 
-
         {/* Fundraiser Card 3 */}
         <View style={styles.card}>
           <Image
             source={require('../../assets/images/Yureni.jpg')} // Path to the local image
-            style={styles.profileImage}s
+            style={styles.profileImage}
           />
           <View style={styles.cardContent}>
             <Text style={styles.userName}>Mrs. Yureni Noshika</Text>
-            <Text style={styles.position}>Co - Funder in HelperSL Pvt Ltd</Text>
-            <Text style={styles.date}>Thu, 20 june 2024 Joined</Text>
+            <Text style={styles.position}>Co-Founder in HelperSL Pvt Ltd</Text>
+            <Text style={styles.date}>Thu, 20 June 2024 Joined</Text>
             <View style={styles.locationContainer}>
               <FontAwesome name="map-marker" size={16} color="gold" />
               <Text style={styles.location}>The Stella St, Colombo</Text>
             </View>
           </View>
         </View>
-
       </ScrollView>
     </View>
   );
@@ -104,50 +87,40 @@ const Fundraiser = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e0f8fc',
+    backgroundColor: '#fff',
     paddingHorizontal: 20,
   },
-  tabContainer: {
+  menuOverlay: {
+    position: 'absolute',  // Ensure it is positioned on top
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,  // High z-index to ensure it's on top of other elements
     flexDirection: 'row',
-    backgroundColor: '#000',
-    borderRadius: 25,
-    marginVertical: 20,
-    padding: 5,
   },
-  tab: {
+  overlay: {
     flex: 1,
-    padding: 8,
-    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  activeTab: {
-    backgroundColor: '#fff',
-    borderRadius: 25,
-  },
-  tabText: {
-    fontSize: 18,
-    color:'#fff',
-  },
-  activeTabText: {
-    fontWeight: 'bold',
+  topicTitle: {
+    fontSize: 22, // Font size for the title
+    fontWeight: '500',
+    marginTop: 20,
     color: '#000',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2f4f4f',
-    marginTop: 10,
-    marginBottom: 10,
+    textAlign: 'center',
+    marginBottom: 25, // Margin below the title
   },
   scrollView: {
     marginTop: 10,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
     borderRadius: 10,
     padding: 10,
     marginRight: 15,
     width: 260,
-    height:440,
+    height: 440,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -165,7 +138,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
     marginBottom: 5,
   },
   position: {

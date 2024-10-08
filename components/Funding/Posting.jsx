@@ -1,55 +1,52 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
+import Fundheader from './Fundheader'; // Ensure this is the correct path
+import Fside from './Fside'; // Import FundSidemenu correctly
 
-const Posting = ({ navigation }) => { 
+const Posting = ({ navigation }) => {
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [activeTab, setActiveTab] = useState('Post'); // Active Tab State
+  const [isMenuVisible, setMenuVisible] = useState(false); // Side menu visibility state
+
+  // Toggle function for the menu visibility
+  const toggleMenu = () => {
+    setMenuVisible(!isMenuVisible);
+  };
 
   // Function to handle the form submission
   const handlePostSubmission = () => {
-    // Your form submission logic here (e.g., validation, API call, etc.)
     alert('Post Submitted!');
   };
 
   return (
     <View style={styles.container}>
-      {/* Tab Container */}
-      <View style={styles.tabContainer}>
-        <Pressable
-          style={[styles.tab, activeTab === 'Post' && styles.activeTab]}
-          onPress={() => setActiveTab('Post')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Post' && styles.activeTabText]}>Post</Text>
-        </Pressable>
+      {/* Header */}
+      <Fundheader title="Posting" toggleMenu={toggleMenu} />
 
-        <Pressable
-          style={[styles.tab, activeTab === 'News' && styles.activeTab]}
-          onPress={() => navigation.navigate('News')}
-        >
-          <Text style={[styles.tabText, activeTab === 'News' && styles.activeTabText]}>News</Text>
-        </Pressable>
+      {/* Side Menu */}
+      {isMenuVisible && (
+        <View style={styles.menuOverlay}>
+          <Fside visible={isMenuVisible} toggleMenu={toggleMenu} />
+          <TouchableOpacity style={styles.overlay} onPress={() => setMenuVisible(false)} />
+        </View>
+      )}
 
-        <Pressable
-          style={[styles.tab, activeTab === 'Banking' && styles.activeTab]}
-          onPress={() => navigation.navigate('Banking')} 
-        >
-          <Text style={[styles.tabText, activeTab === 'Banking' && styles.activeTabText]}>Banking</Text>
-        </Pressable>
+      
+      <Text style={styles.Tophead}>Guide To Make Post</Text>
 
-        <Pressable
-          style={[styles.tab, activeTab === 'Fund' && styles.activeTab]}
-          onPress={() => navigation.navigate('Fund')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Fund' && styles.activeTabText]}>Funding</Text>
-        </Pressable>
+      {/* Guideline Text */}
+      <View style={styles.guidelineContainer}>
+        <Text style={styles.bulletPoint}>
+          *පහත පෝරමය නිවැරදි දුරකථන අංකය හෝ ඊමේල් ලිපිනය සදහන් කර පැහැදිලි විස්තර ඇතුළත් කර පුරවන්න.මෙම පෝරමය ඔබට
+          මූලම්‍යමය වශයෙන් හෝ උපකාර කිරීමට සිටින ප්‍රධානීන්ටද පෙන්නම් කරයි.
+        </Text>
       </View>
 
       {/* Form */}
       <View style={styles.form}>
-        {/* Name Field */}
         <TextInput
           style={styles.input}
           placeholder="Name"
@@ -82,10 +79,6 @@ const Posting = ({ navigation }) => {
 
         {/* Upload Images Button */}
         <TouchableOpacity style={styles.uploadButton}>
-          {/* <Image
-            style={styles.uploadIcon}
-            source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/upload.png' }}
-          /> */}
           <Text style={styles.uploadText}>Upload Images</Text>
         </TouchableOpacity>
 
@@ -101,7 +94,7 @@ const Posting = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e0f8fc',
+    backgroundColor: '#fff',
     paddingHorizontal: 20,
   },
   tabContainer: {
@@ -122,23 +115,42 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 18,
-    color:'#fff',
+    color: '#fff',
   },
   activeTabText: {
     fontWeight: 'bold',
     color: '#000',
   },
+  guidelineContainer: {
+    marginBottom: 15,
+  },
+  bulletPoint: {
+    fontSize: 14,
+    color: '#000',
+    marginBottom: 10,
+    fontWeight: '500',
+  },
+  Tophead: {
+    fontSize: 23,
+    fontWeight: '600',
+    paddingVertical: 10,
+    paddingHorizontal: 70,
+    paddingBottom: 30,
+    paddingTop: 30,
+  },
   form: {
     flex: 1,
   },
   input: {
-    backgroundColor: '#a7dbe9',
-    borderRadius: 10,
-    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderColor: '#000',
+    borderWidth: 1,
+    paddingVertical: 8,
     paddingHorizontal: 15,
     fontSize: 16,
-    color: '#333',
-    marginBottom: 20,
+    color: '#000',
+    marginBottom: 10,
   },
   descriptionInput: {
     height: 100,
@@ -153,11 +165,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  uploadIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 10,
-  },
   uploadText: {
     fontSize: 16,
     color: '#000',
@@ -166,13 +173,26 @@ const styles = StyleSheet.create({
   postButton: {
     backgroundColor: '#000',
     paddingVertical: 15,
-    borderRadius: 25,
+    borderRadius: 20,
     alignItems: 'center',
   },
   postButtonText: {
     fontSize: 18,
     color: '#fff',
     fontWeight: 'bold',
+  },
+  menuOverlay: {
+    position: 'absolute',  // Ensure it is positioned on top
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,  // High z-index to ensure it's on top of other elements
+    flexDirection: 'row',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
 

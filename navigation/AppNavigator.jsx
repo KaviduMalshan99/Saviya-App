@@ -16,6 +16,9 @@ import Posting from '../components/Funding/Posting';
 import Banking from '../components/Funding/Banking';
 import News from '../components/Funding/News';
 import Fund from '../components/Funding/Fund';
+import FunderProfile from '../components/Funding/FunderProfile';
+import Fside from '../components/Funding/Fside';
+import Fundheader from '../components/Funding/Fundheader';
 
 const Stack = createStackNavigator();
 
@@ -37,6 +40,10 @@ const AppNavigator = () => {
       <Stack.Screen name="Banking" component={Banking} />
       <Stack.Screen name="News" component={News} />
       <Stack.Screen name="Fund" component={Fund} />
+      <Stack.Screen name="FunderProfile" component={FunderProfile} />
+      <Stack.Screen name="Fside" component={Fside} />
+      <Stack.Screen name="Fundheader" component={Fundheader} />
+
 
     </Stack.Navigator>
   );

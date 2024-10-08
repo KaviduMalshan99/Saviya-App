@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, Pressable, FlatList, TouchableOpacity, ScrollView, Dimensions } from 'react-native'; // Added Dimensions and ScrollView
+import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, ScrollView, Dimensions } from 'react-native'; 
+import Fundheader from './Fundheader'; // Import Fundheader
+import Fside from './Fside'; // Import Fside
 
 const News = ({ navigation }) => {
-  const [activeTab, setActiveTab] = useState('News'); // Active Tab State for News
+  // const [activeTab, setActiveTab] = useState('News'); // Active Tab State for News
+  const [isMenuVisible, setMenuVisible] = useState(false); // Side menu visibility state
 
   const images = [
     require('../../assets/images/hands.jpeg'),
@@ -29,32 +32,12 @@ const News = ({ navigation }) => {
       note: 'I’m making and selling spoons using wood and coconut parts...',
       images: [require('../../assets/images/p3.jpg'), require('../../assets/images/p4.jpg')],
     },
-    {
-      id: '3',
-      name: 'Anula Perera',
-      contact: '+9475 2190 167',
-      location: 'Ampara, Sri Lanka',
-      note: 'I’m making and selling spoons using wood and coconut parts...',
-      images: [require('../../assets/images/p1.jpg'), require('../../assets/images/p3.jpg')],
-    },
-    {
-      id: '4',
-      name: 'Anula Perera',
-      contact: '+9475 2190 167',
-      location: 'Ampara, Sri Lanka',
-      note: 'I’m making and selling spoons using wood and coconut parts...',
-      images: [require('../../assets/images/p4.jpg'), require('../../assets/images/p1.jpg')],
-    },
-    {
-      id: '5',
-      name: 'Anula Perera',
-      contact: '+9475 2190 167',
-      location: 'Ampara, Sri Lanka',
-      note: 'I’m making and selling spoons using wood and coconut parts...',
-      images: [require('../../assets/images/p3.jpg'), require('../../assets/images/p2.jpg')],
-    },
     // More cards can be added here...
   ];
+
+  const toggleMenu = () => {
+    setMenuVisible(!isMenuVisible); // Toggle the side menu visibility
+  };
 
   const renderCard = ({ item }) => (
     <View style={styles.card}>
@@ -84,103 +67,78 @@ const News = ({ navigation }) => {
   );
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Tab Container */}
-      <View style={styles.tabContainer}>
-        <Pressable
-          style={[styles.tab, activeTab === 'Post' && styles.activeTab]}
-          onPress={() => navigation.navigate('Posting')}
+    <View style={styles.container}>
+      {/* Header with toggleMenu function */}
+      <Fundheader toggleMenu={toggleMenu} />
+
+      {/* Side Menu */}
+      {isMenuVisible && (
+        <View style={styles.menuOverlay}>
+          <Fside visible={isMenuVisible} toggleMenu={toggleMenu} />
+          <TouchableOpacity style={styles.overlay} onPress={() => setMenuVisible(false)} />
+        </View>
+      )}
+
+      <ScrollView style={styles.content}>
+        {/* Topic Title */}
+        <Text style={styles.topicTitle}>Help Hands Community</Text>
+
+        {/* Image Slider */}
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          style={styles.imageSlider}
         >
-          <Text style={[styles.tabText, activeTab === 'Post' && styles.activeTabText]}>Post</Text>
-        </Pressable>
+          {images.map((image, index) => (
+            <Image key={index} source={image} style={[styles.sliderImage, { width: width - 30 }]} />
+          ))}
+        </ScrollView>
 
-        <Pressable
-          style={[styles.tab, activeTab === 'News' && styles.activeTab]}
-          onPress={() => setActiveTab('News')}
-        >
-          <Text style={[styles.tabText, activeTab === 'News' && styles.activeTabText]}>News</Text>
-        </Pressable>
-
-        <Pressable
-          style={[styles.tab, activeTab === 'Banking' && styles.activeTab]}
-          onPress={() => navigation.navigate('Banking')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Banking' && styles.activeTabText]}>Banking</Text>
-        </Pressable>
-
-        <Pressable
-          style={[styles.tab, activeTab === 'Fund' && styles.activeTab]}
-          onPress={() => navigation.navigate('Fund')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Fund' && styles.activeTabText]}>Funding</Text>
-        </Pressable>
-      </View>
-
-      {/* Topic Title */}
-      <Text style={styles.topicTitle}>Help Hands Community</Text>
-
-      {/* Image Slider */}
-      <ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        style={styles.imageSlider}
-      >
-        {images.map((image, index) => (
-          <Image key={index} source={image} style={[styles.sliderImage, { width: width - 30 }]} />
-        ))}
+        {/* FlatList for grid view */}
+        <FlatList
+          data={cardData}
+          renderItem={renderCard}
+          keyExtractor={item => item.id}
+          numColumns={2} // Number of columns in the grid
+          columnWrapperStyle={styles.columnWrapper} // Styling for the rows
+          contentContainerStyle={styles.gridContainer}
+          scrollEnabled={false} // Disable scrolling in the FlatList because the entire page scrolls
+        />
       </ScrollView>
-
-      {/* FlatList for grid view */}
-      <FlatList
-        data={cardData}
-        renderItem={renderCard}
-        keyExtractor={item => item.id}
-        numColumns={2} // Number of columns in the grid
-        columnWrapperStyle={styles.columnWrapper} // Styling for the rows
-        contentContainerStyle={styles.gridContainer}
-        scrollEnabled={false} // Disable scrolling in the FlatList because the entire page scrolls
-      />
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e0f8fc',
+    backgroundColor: '#fff',
     paddingHorizontal: 15,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#000',
-    borderRadius: 25,
-    marginVertical: 20,
-    padding: 5,
-  },
-  tab: {
+  content: {
     flex: 1,
-    padding: 8,
-    alignItems: 'center',
   },
-  activeTab: {
-    backgroundColor: '#fff',
-    borderRadius: 25,
+  menuOverlay: {
+    position: 'absolute',  // Ensure it is positioned on top
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,  // High z-index to ensure it's on top of other elements
+    flexDirection: 'row',
   },
-  tabText: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  activeTabText: {
-    fontWeight: 'bold',
-    color: '#000',
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   topicTitle: {
     fontSize: 22, // Font size for the title
-    fontWeight:'500',
-    color: '#03829F',
+    fontWeight: '500',
+    marginTop:20,
+    color: '#000',
     textAlign: 'center',
-    marginBottom: 15, // Margin below the title
+    marginBottom: 25, // Margin below the title
   },
   imageSlider: {
     height: 350, // Height for the image slider
