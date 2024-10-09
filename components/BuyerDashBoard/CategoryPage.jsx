@@ -8,11 +8,11 @@ const { width: screenWidth } = Dimensions.get('window');
 
 const categories = [
   { id: 1, name: 'මැටි බඳුන්', image: require('../../assets/images/buyer_image/category_pot.png'), page: 'ClayPotCategoryPage' }, // Add the page property for navigation
-  { id: 2, name: 'මල් පැල', image: require('../../assets/images/buyer_image/category_flower.png') },
-  { id: 3, name: 'හතු', image: require('../../assets/images/buyer_image/mushroom.png') },
-  { id: 4, name: 'චට්නි', image: require('../../assets/images/buyer_image/category_chuttny.png') },
-  { id: 5, name: 'හදුන් කූරු', image: require('../../assets/images/buyer_image/category_insense.png') },
-  { id: 6, name: 'කඩදාසි නිෂ්පාදන', image: require('../../assets/images/buyer_image/category_paper.png') },
+  { id: 2, name: 'මල් පැල', image: require('../../assets/images/buyer_image/category_flower.png'), page: 'FlowerPlantCategoryPage' },
+  { id: 3, name: 'හතු', image: require('../../assets/images/buyer_image/mushroom.png'), page: 'MushroomCategoryPage' },
+  { id: 4, name: 'චට්නි', image: require('../../assets/images/buyer_image/category_chuttny.png'), page: 'ChutneyCategoryPage' },
+  { id: 5, name: 'හදුන් කූරු', image: require('../../assets/images/buyer_image/category_insense.png'), page: 'IncenseCategoryPage' },
+  { id: 6, name: 'කඩදාසි නිෂ්පාදන', image: require('../../assets/images/buyer_image/category_paper.png'), page: 'PaperProductsCategoryPage' },
 ];
 
 const CategoryPage = () => {
@@ -36,10 +36,8 @@ const CategoryPage = () => {
             <TouchableOpacity 
               key={category.id} 
               style={styles.categoryItem}
-              onPress={() => {
-                console.log('Navigating to:', category.page); // Debugging step
-                navigation.navigate(category.page); // Navigate to the linked page
-              }} // Navigate to the linked page
+              onPress={() => navigation.navigate('CategoryProductsPage', { categoryName: category.name })}
+
             >
               <Image source={category.image} style={styles.categoryImage} />
               <Text style={styles.categoryText}>{category.name}</Text>

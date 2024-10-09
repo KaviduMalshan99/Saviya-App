@@ -12,6 +12,11 @@ import BuyerHome from '../components/BuyerDashBoard/BuyerHome';
 import LoginBuyer1 from '../components/Auth/LoginBuyer1';
 import CategoryPage from '../components/BuyerDashBoard/CategoryPage';
 import ClayPotCategoryPage from '../components/BuyerDashBoard/ClayPotCategoryPage'; // Import the new page
+import CategoryProductsPage from '../components/BuyerDashBoard/CategoryProductsPage';
+import NewArrivalsPage from '../components/BuyerDashBoard/NewArrivalsPage'; // Import NewArrivalsPage
+import BestSellersPage from '../components/BuyerDashBoard/BestSellersPage'; // Import BestSellersPage
+import SellerDashboardPage from '../components/LearnerDashboard/sellerDashboard/SellerDashboardPage'; // Import BestSellersPage
+import AddProductPage from '../components/LearnerDashboard/sellerDashboard/AddProductPage'; // Import BestSellersPage
 
 const Stack = createStackNavigator();
 
@@ -28,6 +33,13 @@ const AppNavigator = () => {
       <Stack.Screen name="LearnerHome" component={LearnerHome} />
       <Stack.Screen name="BuyerHome" component={BuyerHome} />
       <Stack.Screen name="CategoryPage" component={CategoryPage} />
+      <Stack.Screen name="CategoryProductsPage" component={CategoryProductsPage} />
+      <Stack.Screen name="NewArrivalsPage" component={NewArrivalsPage} options={{ title: 'New Arrivals' }} />
+      <Stack.Screen name="BestSellersPage" component={BestSellersPage} options={{ title: 'Best Sellers' }} />
+      <Stack.Screen name="SellerDashboardPage" component={SellerDashboardPage} />
+      <Stack.Screen name="AddProductPage" component={AddProductPage} />
+
+
       <Stack.Screen 
         name="ClayPotCategoryPage" 
         component={ClayPotCategoryPage} 

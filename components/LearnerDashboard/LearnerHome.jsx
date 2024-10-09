@@ -43,7 +43,7 @@ const LearnerHome = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate('MarketHome')}
+          onPress={() => navigation.navigate('SellerDashboardPage')}
         >
           <Ionicons name="pricetag" size={24} color="#007BFF" />
           <Text style={styles.navText}>Market</Text>

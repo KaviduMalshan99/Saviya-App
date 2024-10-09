@@ -1,26 +1,21 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native'; // Import navigation hook
+import { useNavigation } from '@react-navigation/native'; // Import the navigation hook
 
 const { width } = Dimensions.get('window');
 
 const SideMenu = ({ visible, toggleMenu }) => {
   const slideAnim = useRef(new Animated.Value(-width * 0.75)).current; // Initial value for slide (off-screen)
-  const navigation = useNavigation(); // Hook to access the navigation object
+  const navigation = useNavigation(); // Use the navigation hook for navigation control
 
   useEffect(() => {
     Animated.timing(slideAnim, {
       toValue: visible ? 0 : -width * 0.75, // Slide in or out based on visibility
       duration: 300,
-      useNativeDriver: false,
+      useNativeDriver: false, // We're animating position, so we can't use native driver
     }).start();
   }, [visible]);
-
-  const handleNavigate = (route) => {
-    toggleMenu(); // Close the menu
-    navigation.navigate(route); // Navigate to the desired route
-  };
 
   return (
     <Animated.View style={[styles.menuContainer, { transform: [{ translateX: slideAnim }] }]}>
@@ -40,18 +35,33 @@ const SideMenu = ({ visible, toggleMenu }) => {
       </View>
 
       <View style={styles.menuItems}>
-        <TouchableOpacity onPress={() => handleNavigate('CategoryPage')}>
+        <TouchableOpacity onPress={() => { 
+          toggleMenu(); 
+          navigation.navigate('CategoryPage'); 
+        }}>
           <Text style={styles.menuItem}>{" >  නිෂ්පාදන කාණ්ඩ"}</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
+
+        {/* New Arrivals */}
+        <TouchableOpacity onPress={() => { 
+          toggleMenu(); 
+          navigation.navigate('NewArrivalsPage'); 
+        }}>
           <Text style={styles.menuItem}>{" >  නව පැමිණීම්"}</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
+
+        {/* Best Sellers */}
+        <TouchableOpacity onPress={() => { 
+          toggleMenu(); 
+          navigation.navigate('BestSellersPage'); 
+        }}>
           <Text style={styles.menuItem}>{" >  හොඳම විකුණුම්කරුවන්"}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity>
           <Text style={styles.menuItem}>{" >  විශේෂාංග නිෂ්පාදන"}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity>
           <Text style={styles.menuItem}>{" >  ඇණවුම්"}</Text>
         </TouchableOpacity>
@@ -65,10 +75,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    width: width * 0.75,
+    width: width * 0.75, // The width will take up 75% of the screen width
     height: '100%',
     backgroundColor: '#fff',
-    zIndex: 20,
+    zIndex: 20, // Ensure it appears on top of other content
     paddingVertical: 30,
     paddingHorizontal: 20,
     borderRightWidth: 1,

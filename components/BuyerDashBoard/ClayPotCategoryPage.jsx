@@ -20,7 +20,7 @@ const ClayPotCategoryPage = () => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <Header />
+      <Header toggleMenu={toggleMenu} />
 
       {/* Filter and Sorting Section */}
       <View style={styles.filterSortContainer}>
