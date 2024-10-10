@@ -4,37 +4,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'; // Import Picker from the new package
 import Header from './Header'; // Ensure this points to your Header component
 import SideMenu from './SideMenu'; // Ensure the correct path for SideMenu
-import { useRoute } from '@react-navigation/native'; // To get the selected category
+import { useRoute, useNavigation } from '@react-navigation/native'; // To get the selected category and navigation
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Products for different categories
-const productData = {
-  "මැටි බඳුන්": [
-    { id: 1, name: 'Clay Pot 1', price: 'LKR 450.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-    { id: 2, name: 'Clay Pot 2', price: 'LKR 500.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-    { id: 3, name: 'Clay Pot 3', price: 'LKR 550.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-  ],
-  "මල් පැල": [
-    { id: 1, name: 'Flower Plant 1', price: 'LKR 300.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-    { id: 2, name: 'Flower Plant 2', price: 'LKR 400.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-  ],
-  "හතු": [
-    { id: 1, name: 'Mushroom 1', price: 'LKR 200.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-    { id: 2, name: 'Mushroom 2', price: 'LKR 250.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-  ],
-  "චට්නි": [
-    { id: 1, name: 'Chutney 1', price: 'LKR 150.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-    { id: 2, name: 'Chutney 2', price: 'LKR 180.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-  ],
-  "හදුන් කූරු": [
-    { id: 1, name: 'Incense 1', price: 'LKR 100.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-    { id: 2, name: 'Incense 2', price: 'LKR 120.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-  ],
-  "කඩදාසි නිෂ්පාදන": [
-    { id: 1, name: 'Paper Product 1', price: 'LKR 50.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-    { id: 2, name: 'Paper Product 2', price: 'LKR 60.00', image: require('../../assets/images/buyer_image/category_flower.png') },
-  ],
+// Helper function to get image URI and parse if it's in array or object format
+const getImageUri = (imageData) => {
+  try {
+    // Check if the image is a stringified array and parse it
+    const parsedImageData = JSON.parse(imageData);
+    // If it's an array, return the first item (base64 string)
+    if (Array.isArray(parsedImageData)) {
+      return parsedImageData[0]; // This assumes the first image is the main image
+    }
+    return parsedImageData; // If it's not an array, return as it is
+  } catch (error) {
+    // If it's not JSON, return the original base64 string
+    return imageData;
+  }
 };
 
 const CategoryProductsPage = () => {
@@ -42,12 +29,26 @@ const CategoryProductsPage = () => {
   const [menuVisible, setMenuVisible] = useState(false); // State for side menu visibility
   const route = useRoute(); // Get the selected category from navigation
   const { categoryName } = route.params; // Retrieve the category name passed as parameter
+  const navigation = useNavigation(); // Initialize navigation hook
 
   const [products, setProducts] = useState([]);
 
+  // Function to fetch products from the database
+  const fetchProducts = async (category) => {
+    try {
+      const response = await fetch(`http://192.168.1.6/product_app/get_products.php?category=${category}`);
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
   // Load the products for the selected category
   useEffect(() => {
-    setProducts(productData[categoryName] || []); // Fetch products based on category name
+    if (categoryName) {
+      fetchProducts(categoryName); // Fetch products based on category name
+    }
   }, [categoryName]);
 
   // Function to toggle the side menu
@@ -57,21 +58,17 @@ const CategoryProductsPage = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <Header toggleMenu={toggleMenu} />
 
-      {/* Side Menu */}
       {menuVisible && <SideMenu visible={menuVisible} toggleMenu={toggleMenu} />}
 
-      {/* Filter and Sorting Section */}
       <View style={styles.filterSortContainer}>
-        {/* Filter Button */}
         <TouchableOpacity style={styles.filterButton}>
           <Ionicons name="filter" size={20} color="#000" />
           <Text style={styles.filterText}>Filters</Text>
         </TouchableOpacity>
 
-        {/* Sorting Dropdown */}
+        
         <View style={styles.sortingDropdown}>
           <Text style={styles.sortingText}>Sorting by</Text>
           <Picker
@@ -86,14 +83,20 @@ const CategoryProductsPage = () => {
         </View>
       </View>
 
-      {/* Product Grid */}
       <ScrollView contentContainerStyle={styles.productGrid}>
-        {products.map((product) => (
-          <View key={product.id} style={styles.productItem}>
-            <Image source={product.image} style={styles.productImage} />
-            <Text style={styles.productName}>{product.name}</Text>
-            <Text style={styles.productPrice}>{product.price}</Text>
-          </View>
+        {products.map((product, index) => (
+          <TouchableOpacity
+            key={product.product_id || index} // Ensure key is unique
+            style={styles.productItem}
+            onPress={() => navigation.navigate('ProductPage', { productId: product.product_id })}
+            >
+            <Image
+              source={{ uri: getImageUri(product.main_image) }} // Use helper function to parse and display image
+              style={styles.productImage}
+            />
+            <Text style={styles.productName}>{product.product_name}</Text> 
+            <Text style={styles.productPrice}>LKR {product.price}</Text>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </SafeAreaView>

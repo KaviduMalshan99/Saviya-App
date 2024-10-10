@@ -17,7 +17,14 @@ import NewArrivalsPage from '../components/BuyerDashBoard/NewArrivalsPage'; // I
 import BestSellersPage from '../components/BuyerDashBoard/BestSellersPage'; // Import BestSellersPage
 import SellerDashboardPage from '../components/LearnerDashboard/sellerDashboard/SellerDashboardPage'; // Import BestSellersPage
 import AddProductPage from '../components/LearnerDashboard/sellerDashboard/AddProductPage'; // Import BestSellersPage
+import ProductPage from '../components/BuyerDashBoard/ProductPage'; // Import BestSellersPage
+import OrderPage from '../components/BuyerDashBoard/OrderPage'; // Import BestSellersPage
+import CheckoutPage from '../components/BuyerDashBoard/CheckoutPage'; // Import BestSellersPage
+import OrderSuccessPage from '../components/BuyerDashBoard/OrderSuccessPage'; // Import BestSellersPage
+import OrderFailurePage from '../components/BuyerDashBoard/OrderFailurePage'; // Import BestSellersPage
 
+CheckoutPage
+OrderPage
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -38,6 +45,12 @@ const AppNavigator = () => {
       <Stack.Screen name="BestSellersPage" component={BestSellersPage} options={{ title: 'Best Sellers' }} />
       <Stack.Screen name="SellerDashboardPage" component={SellerDashboardPage} />
       <Stack.Screen name="AddProductPage" component={AddProductPage} />
+      <Stack.Screen name="ProductPage" component={ProductPage} />
+      <Stack.Screen name="OrderPage" component={OrderPage} />
+      <Stack.Screen name="CheckoutPage" component={CheckoutPage} />
+      <Stack.Screen name="OrderSuccessPage" component={OrderSuccessPage} />
+      <Stack.Screen name="OrderFailurePage" component={OrderFailurePage} />
+
 
 
       <Stack.Screen 

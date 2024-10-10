@@ -1,20 +1,37 @@
-import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, Text, SafeAreaView, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, StyleSheet, Dimensions, Text, SafeAreaView, Image, ActivityIndicator } from 'react-native';
 import Header from './Header'; // Ensure this points to your Header component
 import SideMenu from './SideMenu'; // Ensure SideMenu is imported
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Dummy data for New Arrivals products (Product image and price placeholders)
-const newArrivals = [
-  { id: 1, name: 'Product 1', price: 'LKR 1000.00', image: '' }, 
-  { id: 2, name: 'Product 2', price: 'LKR 2000.00', image: '' }, 
-  { id: 3, name: 'Product 3', price: 'LKR 1500.00', image: '' },
-  { id: 4, name: 'Product 4', price: 'LKR 1800.00', image: '' },
-];
-
 const NewArrivalsPage = () => {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [newArrivals, setNewArrivals] = useState([]);  // State to hold new products
+  const [loading, setLoading] = useState(true);  // Loading state
+  const [error, setError] = useState(null);  // Error state
+
+  // Function to fetch new arrival products from the backend
+  const fetchNewArrivals = async () => {
+    try {
+      const response = await fetch('http://192.168.1.6/product_app/get_new_arrivals.php');  // Update the path based on your server
+      const data = await response.json();
+      if (data.message) {
+        setError(data.message);
+      } else {
+        setNewArrivals(data);  // Set the fetched products in state
+      }
+    } catch (error) {
+      setError('Failed to fetch new products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // UseEffect to fetch products when the component mounts
+  useEffect(() => {
+    fetchNewArrivals();
+  }, []);
 
   // Toggle function for the side menu
   const toggleMenu = () => {
@@ -26,24 +43,58 @@ const NewArrivalsPage = () => {
       {/* Header */}
       <Header toggleMenu={toggleMenu} />
 
-      {/* Full Width Image with Title on Top (inside the image) */}
-      <View style={styles.imageContainer}>
-        <Image source={require('../../assets/images/buyer_image/banner_home.png')} style={styles.fullWidthImage} />
-        <View style={styles.overlay}>
-          <Text style={styles.imageTitle}>New Arrivals</Text>
-        </View>
-      </View>
-
-      {/* Product Grid */}
-      <ScrollView contentContainerStyle={styles.productGrid}>
-        {newArrivals.map((product) => (
-          <View key={product.id} style={styles.productItem}>
-            {/* Placeholder for Product Image */}
-            <View style={styles.productImagePlaceholder} />
-            <Text style={styles.productName}>{product.name}</Text>
-            <Text style={styles.productPrice}>{product.price}</Text>
+      {/* ScrollView for all content, including the image container */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Full Width Image with Title on Top */}
+        <View style={styles.imageContainer}>
+          <Image source={require('../../assets/images/buyer_image/banner_home.png')} style={styles.fullWidthImage} />
+          <View style={styles.overlay}>
+            <Text style={styles.imageTitle}>New Arrivals</Text>
           </View>
-        ))}
+        </View>
+
+        {/* Product Grid */}
+        <View style={styles.productGrid}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : (
+            newArrivals.map((product, index) => (
+              <React.Fragment key={product.product_id}>
+                <View style={styles.productItem}>
+                  {/* Correctly render the first main image */}
+                  {product.main_image ? (
+                    <Image
+                      source={{
+                        uri: product.main_image.startsWith('data:image')
+                          ? product.main_image // If base64 image, use it directly
+                          : product.main_image.startsWith('file://')
+                            ? product.main_image // If file URI, use it as is
+                            : `data:image/jpeg;base64,${product.main_image}`,  // Otherwise, assume it's a base64 string
+                      }}
+                      style={styles.productImage}
+                    />
+                  ) : (
+                    <View style={styles.productImagePlaceholder} />
+                  )}
+                  <Text style={styles.productName}>{product.name}</Text>
+                  <Text style={styles.productPrice}>LKR {product.price}</Text>
+                </View>
+
+                {/* Insert a custom full-width image after the 4th product */}
+                {index === 3 && (
+                  <View style={styles.fullWidthImageContainer}>
+                    <Image
+                      source={require('../../assets/images/buyer_image/banner_home.png')}  // Replace with your custom image path
+                      style={styles.fullWidthCustomImage}
+                    />
+                  </View>
+                )}
+              </React.Fragment>
+            ))
+          )}
+        </View>
       </ScrollView>
 
       {/* Side Menu */}
@@ -57,8 +108,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  scrollContent: {
+    paddingBottom: 20, // Added padding to avoid content cutoff at the bottom
+  },
   imageContainer: {
     position: 'relative',
+    marginBottom: 20, // Adding margin to separate it from the products
   },
   fullWidthImage: {
     width: '100%',
@@ -78,14 +133,13 @@ const styles = StyleSheet.create({
   imageTitle: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: 'black', // Black color title inside the image
+    color: 'black',
   },
   productGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    paddingTop: 10,
   },
   productItem: {
     width: screenWidth * 0.45,
@@ -94,12 +148,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
     alignItems: 'center',
-    elevation: 3, // Android shadow effect
+    elevation: 3,
+  },
+  productImage: {
+    width: '100%',
+    height: 120,
+    resizeMode: 'cover',
   },
   productImagePlaceholder: {
     width: '100%',
     height: 120,
-    backgroundColor: '#ddd', // Placeholder for the product image
+    backgroundColor: '#ddd',
   },
   productName: {
     marginTop: 10,
@@ -112,6 +171,21 @@ const styles = StyleSheet.create({
     fontFamily: 'Lato-Regular',
     fontSize: 14,
     color: '#888',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  fullWidthImageContainer: {
+    width: screenWidth, // Full width of the screen
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  fullWidthCustomImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover', // Ensure it covers the width and height properly
   },
 });
 

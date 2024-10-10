@@ -13,6 +13,8 @@ const categories = [
   { id: 6, name: 'කඩදාසි නිෂ්පාදන', subcategories: ['Gift Wrapping', 'Packaging', 'Stationery'] },
 ];
 
+const colorRestrictedCategories = ['චට්නි', 'හතු', 'හදුන් කූරු', 'කඩදාසි නිෂ්පාදන'];
+
 const AddProductPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
@@ -43,6 +45,20 @@ const AddProductPage = () => {
     }
   };
 
+   // Function to delete an image from mainImages
+   const deleteMainImage = (index) => {
+    const updatedMainImages = [...mainImages];
+    updatedMainImages.splice(index, 1); // Remove the image at the specified index
+    setMainImages(updatedMainImages);
+  };
+
+  // Function to delete an image from colorImages
+  const deleteColorImage = (color) => {
+    const updatedColorImages = { ...colorImages };
+    delete updatedColorImages[color]; // Remove the color key from the object
+    setColorImages(updatedColorImages);
+  };
+  
   const saveProduct = async () => {
     const productData = {
       category: selectedCategory,
@@ -53,16 +69,16 @@ const AddProductPage = () => {
       price: price,
       description: description,
       main_images: mainImages,
-      color_images: colorImages,
+      color_images: colorRestrictedCategories.includes(selectedCategory) ? {} : colorImages, // Empty color_images for specific categories
     };
   
     try {
-      const response = await fetch('http://localhost/product_app/save_product.php', {
+      const response = await fetch('http://192.168.1.6/product_app/save_product.php', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',  // Ensure JSON content type
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(productData),  // Convert product data to JSON string
+        body: JSON.stringify(productData),
       });
       const result = await response.text();
       alert(result); // Show success or error message
@@ -71,7 +87,6 @@ const AddProductPage = () => {
       alert("Error saving product");
     }
   };
-  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -88,6 +103,8 @@ const AddProductPage = () => {
             onValueChange={(itemValue) => {
               setSelectedCategory(itemValue);
               setSelectedSubcategory('');
+              setSelectedColor(''); // Reset color when category changes
+              setColorImages({}); // Reset color images if restricted category is selected
             }}
           >
             <Picker.Item label="කාණ්ඩයක් තෝරන්න" value="" />
@@ -146,18 +163,22 @@ const AddProductPage = () => {
           onChangeText={setStockQuantity}
         />
 
-        {/* Color Selection */}
-        <Text style={styles.label}>වර්ණය</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="වර්ණය ඇතුළත් කරන්න (e.g., රතු, නිල්)"
-          value={selectedColor}
-          onChangeText={setSelectedColor}
-        />
-        <TouchableOpacity style={styles.addImageButton} onPress={() => pickImage('color')}>
-          <Ionicons name="image" size={20} color="#000" />
-          <Text style={styles.addImageText}>{selectedColor} සඳහා රූපයක් එකතු කරන්න</Text>
-        </TouchableOpacity>
+        {/* Conditionally Render Color Selection */}
+        {!colorRestrictedCategories.includes(selectedCategory) && (
+          <>
+            <Text style={styles.label}>වර්ණය</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="වර්ණය ඇතුළත් කරන්න (e.g., රතු, නිල්)"
+              value={selectedColor}
+              onChangeText={setSelectedColor}
+            />
+            <TouchableOpacity style={styles.addImageButton} onPress={() => pickImage('color')}>
+              <Ionicons name="image" size={20} color="#000" />
+              <Text style={styles.addImageText}>{selectedColor} සඳහා රූපයක් එකතු කරන්න</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         {/* Price */}
         <Text style={styles.label}>මිල</Text>
@@ -187,23 +208,35 @@ const AddProductPage = () => {
           <Text style={styles.addImageText}>ප්‍රධාන රූපයක් එකතු කරන්න</Text>
         </TouchableOpacity>
 
-        {/* Show selected main images */}
+        {/* Show selected main images with delete button */}
         <View style={styles.imagePreviewContainer}>
           {mainImages.map((imageUri, index) => (
-            <Image key={index} source={{ uri: imageUri }} style={styles.imagePreview} />
-          ))}
-        </View>
-
-        {/* Show selected color images */}
-        <Text style={styles.label}>තෝරාගත් වර්ණ සහ රූප</Text>
-        <View style={styles.imagePreviewContainer}>
-          {Object.entries(colorImages).map(([color, imageUri]) => (
-            <View key={color} style={styles.colorImageContainer}>
-              <Text>{color}</Text>
+            <View key={index} style={styles.imageWrapper}>
               <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+              <TouchableOpacity style={styles.closeButton} onPress={() => deleteMainImage(index)}>
+                <Ionicons name="close" size={20} color="#fff" />
+              </TouchableOpacity>
             </View>
           ))}
         </View>
+
+        {/* Show selected color images with delete button */}
+        {!colorRestrictedCategories.includes(selectedCategory) && (
+          <>
+            <Text style={styles.label}>තෝරාගත් වර්ණ සහ රූප</Text>
+            <View style={styles.imagePreviewContainer}>
+              {Object.entries(colorImages).map(([color, imageUri]) => (
+                <View key={color} style={styles.imageWrapper}>
+                  <Text>{color}</Text>
+                  <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                  <TouchableOpacity style={styles.closeButton} onPress={() => deleteColorImage(color)}>
+                    <Ionicons name="close" size={20} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         {/* Save Button */}
         <View style={styles.buttonContainer}>
@@ -213,6 +246,7 @@ const AddProductPage = () => {
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -282,6 +316,14 @@ const styles = StyleSheet.create({
   colorImageContainer: {
     alignItems: 'center',
     marginRight: 20,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: -5,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 15,
+    padding: 5,
   },
   buttonContainer: {
     marginTop: 20,
