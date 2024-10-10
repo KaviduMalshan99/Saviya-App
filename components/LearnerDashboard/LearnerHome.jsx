@@ -35,7 +35,7 @@ const LearnerHome = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate('Events')}
+          onPress={() => navigation.navigate('EHomeScreen')}
         >
           <Ionicons name="calendar" size={24} color="#007BFF" />
           <Text style={styles.navText}>Events</Text>
@@ -56,6 +56,7 @@ const LearnerHome = ({ navigation }) => {
           <Ionicons name="people" size={24} color="#007BFF" />
           <Text style={styles.navText}>Community</Text>
         </TouchableOpacity>
+        
       </View>
     </View>
   );
