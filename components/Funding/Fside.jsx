@@ -32,40 +32,40 @@ const Fside = ({ visible, toggleMenu }) => {
           toggleMenu(); 
           navigation.navigate('FunderProfile'); 
         }}>
-          <Text style={styles.menuItem}>Profile</Text>
+          <Text style={styles.menuItem}>Make Profile</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => { 
           toggleMenu(); 
           navigation.navigate('Posting'); 
         }}>
-          <Text style={styles.menuItem}>Posting</Text>
+          <Text style={styles.menuItem}>Make Post</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => { 
           toggleMenu(); 
           navigation.navigate('News'); 
         }}>
-          <Text style={styles.menuItem}>News</Text>
+          <Text style={styles.menuItem}>News Feed</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => { 
           toggleMenu(); 
           navigation.navigate('Banking'); 
         }}>
-          <Text style={styles.menuItem}>Banking</Text>
+          <Text style={styles.menuItem}>Banking Help</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => { 
           toggleMenu(); 
           navigation.navigate('Fund'); 
         }}>
-          <Text style={styles.menuItem}>Funding</Text>
+          <Text style={styles.menuItem}>Our Fundraiser</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Community verison 1.2</Text>
+        <Text style={styles.footerText}>Self-Employed Persons not allow to create a Profile as fundraiser-Community verison 1.2</Text>
       </View>
     </Animated.View>
   );
@@ -123,11 +123,11 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
+    bottom: 45,
+    left: 25,
   },
   footerText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#888',
   },
 });

@@ -1,42 +1,56 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, ScrollView, Dimensions } from 'react-native'; 
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, ScrollView, Dimensions, Alert, Animated } from 'react-native';
 import Fundheader from './Fundheader'; // Import Fundheader
 import Fside from './Fside'; // Import Fside
 
 const News = ({ navigation }) => {
-  // const [activeTab, setActiveTab] = useState('News'); // Active Tab State for News
   const [isMenuVisible, setMenuVisible] = useState(false); // Side menu visibility state
+  const [cardData, setCardData] = useState([]); // State to hold the fetched data
+  const { width } = Dimensions.get('window'); // Get the width of the screen for full-width image slides
+  const [loading, setLoading] = useState(true); // State to manage loading
+  const [currentSlide, setCurrentSlide] = useState(0); // State to track the current image slide
 
   const images = [
-    require('../../assets/images/hands.jpeg'),
     require('../../assets/images/Helpwomen.jpeg'),
+    require('../../assets/images/hands.jpeg'),
+    
   ];
 
-  const { width } = Dimensions.get('window'); // Get the width of the screen for full-width image slides
+  // Fetch data from the PHP API
+  const fetchData = async () => {
+    try {
+      const response = await fetch('http://192.168.8.113/myapp/retrieve_data.php'); // Adjust with your IP
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setCardData(data); // Set the fetched data into the state
+      setLoading(false); // Turn off loading after fetching data
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch data from server');
+      setLoading(false);
+    }
+  };
 
-  // Sample data for the cards
-  const cardData = [
-    {
-      id: '1',
-      name: 'Janith Hewage',
-      contact: '+9471 6767 467',
-      location: 'මාතර, ශ්‍රී ලංකාව',
-      note: 'මට මටි භාජන සාදුකම් දැනටමත් මට කිහිපයක් market place එකට දමා ඇත...',
-      images: [require('../../assets/images/p1.jpg'), require('../../assets/images/p2.jpg')],
-    },
-    {
-      id: '2',
-      name: 'Anula Perera',
-      contact: '+9475 2190 167',
-      location: 'Ampara, Sri Lanka',
-      note: 'I’m making and selling spoons using wood and coconut parts...',
-      images: [require('../../assets/images/p3.jpg'), require('../../assets/images/p4.jpg')],
-    },
-    // More cards can be added here...
-  ];
+  // Use polling mechanism to fetch new data every 10 seconds
+  useEffect(() => {
+    fetchData(); // Fetch data when the component is first mounted
+
+    const interval = setInterval(() => {
+      fetchData(); // Poll the server every 10 seconds
+    }, 10000); // 10000 milliseconds = 10 seconds
+
+    return () => clearInterval(interval); // Clean up the interval when the component unmounts
+  }, []);
 
   const toggleMenu = () => {
     setMenuVisible(!isMenuVisible); // Toggle the side menu visibility
+  };
+
+  const handleScroll = (event) => {
+    // Calculate the current slide based on scroll position
+    const slideIndex = Math.floor(event.nativeEvent.contentOffset.x / width);
+    setCurrentSlide(slideIndex);
   };
 
   const renderCard = ({ item }) => (
@@ -51,13 +65,13 @@ const News = ({ navigation }) => {
         <Text style={styles.label}>Location:</Text> {item.location}
       </Text>
       <Text style={styles.userNote}>
-        <Text style={styles.label}>Note:</Text> {item.note}
+        <Text style={styles.label}>Note:</Text> {item.description}
       </Text>
-      <View style={styles.imageContainer}>
-        {item.images.map((image, index) => (
-          <Image key={index} source={image} style={styles.productImage} />
-        ))}
-      </View>
+      {item.image && (
+        <Image source={{ uri: `http://192.168.8.113/myapp/${item.image}` }} style={styles.cardImage} />
+      )}
+
+      {/* Button at the bottom */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.MarketplaceButton}>
           <Text style={styles.MarketplaceButtonText}>Marketplace</Text>
@@ -88,6 +102,8 @@ const News = ({ navigation }) => {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll} // Detect slide change
+          scrollEventThrottle={16} // Control how often scroll events are fired
           style={styles.imageSlider}
         >
           {images.map((image, index) => (
@@ -95,16 +111,31 @@ const News = ({ navigation }) => {
           ))}
         </ScrollView>
 
-        {/* FlatList for grid view */}
-        <FlatList
-          data={cardData}
-          renderItem={renderCard}
-          keyExtractor={item => item.id}
-          numColumns={2} // Number of columns in the grid
-          columnWrapperStyle={styles.columnWrapper} // Styling for the rows
-          contentContainerStyle={styles.gridContainer}
-          scrollEnabled={false} // Disable scrolling in the FlatList because the entire page scrolls
-        />
+        {/* Dots Container */}
+        <View style={styles.dotsContainer}>
+          {images.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                index === currentSlide ? styles.activeDot : styles.inactiveDot,
+              ]}
+            />
+          ))}
+        </View>
+
+        {/* Loading indicator */}
+        {loading ? (
+          <Text style={styles.loadingText}>Loading...</Text>
+        ) : (
+          <FlatList
+            data={cardData}
+            renderItem={renderCard}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.listContainer}
+            scrollEnabled={true}
+          />
+        )}
       </ScrollView>
     </View>
   );
@@ -120,12 +151,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuOverlay: {
-    position: 'absolute',  // Ensure it is positioned on top
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 100,  // High z-index to ensure it's on top of other elements
+    zIndex: 100,
     flexDirection: 'row',
   },
   overlay: {
@@ -133,87 +164,85 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   topicTitle: {
-    fontSize: 22, // Font size for the title
+    fontSize: 24,
     fontWeight: '500',
-    marginTop:20,
+    marginTop: 25,
     color: '#000',
     textAlign: 'center',
-    marginBottom: 25, // Margin below the title
+    marginBottom: 25,
   },
   imageSlider: {
-    height: 350, // Height for the image slider
-    marginBottom: 20, // Margin below the image slider
+    height: 350,
+    marginBottom: 20,
   },
   sliderImage: {
     height: '100%',
     borderRadius: 15,
-    marginRight: 1, // Space between images
+    marginRight: 1,
   },
-  gridContainer: {
+  listContainer: {
     paddingTop: 10,
-  },
-  columnWrapper: {
-    justifyContent: 'space-between',
-    marginBottom: 1,
+    paddingBottom: 20,
   },
   card: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 12,
-    marginBottom: 10,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: '#6E260E',
-    width: '48%', // Adjust width for two cards per row
-    position: 'relative', // Ensure relative positioning for the button container to work properly
-    paddingBottom: 55, // Add bottom padding to make space for the button
+    position: 'relative',
+    minHeight: 250, // Adjust to fit the button and content
+    paddingBottom: 55, // Ensure space at the bottom for the button
   },
-  userName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  label: {
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  userDetails: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
-  },
-  userNote: {
-    fontSize: 14,
-    color: '#666',
+  cardImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: 10,
+    marginTop: 10,
     marginBottom: 10,
   },
-  imageContainer: {
+  dotsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
+    justifyContent: 'center',
+    marginTop: 10,
   },
-  productImage: {
-    width: '48%',
-    height: 100,
-    borderRadius: 10,
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 5,
+  },
+  activeDot: {
+    backgroundColor: '#000',
+  },
+  inactiveDot: {
+    backgroundColor: '#989898',
   },
   buttonContainer: {
-    position: 'absolute', // Absolute positioning
-    bottom: 15, // Distance from the bottom of the card
+    position: 'absolute',
+    bottom: 10,
     left: 0,
     right: 0,
-    justifyContent: 'center', // Horizontally center
+    justifyContent: 'center',
     alignItems: 'center',
   },
   MarketplaceButton: {
-    backgroundColor: '#355E3B',
-    padding: 10,
+    backgroundColor: '#000',
+    padding: 12,
     borderRadius: 20,
-    width: '70%',
+    width: '75%',
     alignItems: 'center',
   },
   MarketplaceButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 20,
+  },
+  loadingText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#666',
   },
 });
 

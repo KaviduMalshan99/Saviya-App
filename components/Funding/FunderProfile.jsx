@@ -1,84 +1,107 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, Platform } from 'react-native';
+import * as ImagePicker from 'expo-image-picker'; // Import Image Picker from Expo
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
-import Fundheader from './Fundheader'; // Import Fundheader
-import Fside from './Fside'; // Import Fside
+import Fundheader from './Fundheader';
+import Fside from './Fside';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const FunderProfile = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [location, setLocation] = useState('');
-  const [profileImage, setProfileImage] = useState(null);
-  const [isMenuVisible, setMenuVisible] = useState(false); // Side menu visibility state
+  const [joinedDate, setJoinedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [profileImage, setProfileImage] = useState(null); // Store selected image or null
+  const [isMenuVisible, setMenuVisible] = useState(false);
 
-  // Toggle function for the menu visibility
+  // Define the toggleMenu function
   const toggleMenu = () => {
-    setMenuVisible(!isMenuVisible);
+    setMenuVisible(!isMenuVisible); // Toggle the side menu visibility
   };
 
+  // Function to ask for media library permissions
+  const requestPermission = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'We need media library permissions to make this work!');
+    }
+  };
+
+  useEffect(() => {
+    requestPermission(); // Ask for permission on component mount
+  }, []);
+
   // Handle Image Selection
-  const handleSelectImage = () => {
+  const handleSelectImage = async () => {
     const options = {
-      mediaType: 'photo',
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Restrict to images
       quality: 1,
     };
 
-    Alert.alert(
-      "Select Image",
-      "Choose an option",
-      [
-        {
-          text: "Take Photo",
-          onPress: () => {
-            launchCamera(options, (response) => {
-              if (response.assets) {
-                setProfileImage(response.assets[0].uri);
-              }
-            });
-          },
+    const result = await ImagePicker.launchImageLibraryAsync(options);
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri); // Save the selected image URI
+    }
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || joinedDate;
+    setShowDatePicker(Platform.OS === 'ios');
+    setJoinedDate(currentDate);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const defaultImageUri = Image.resolveAssetSource(require('../../assets/images/Otara.jpg')).uri; // Get the URI of the default image
+
+      const formData = {
+        name: name,
+        email: email,
+        location: location,
+        joinedDate: joinedDate.toISOString().split('T')[0], // Format the date (YYYY-MM-DD)
+        profileImageUri: profileImage || defaultImageUri, // Use selected image or default
+      };
+
+      const response = await fetch('http://192.168.8.113/myapp/submit_funderprofile_php.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        {
-          text: "Choose from Library",
-          onPress: () => {
-            launchImageLibrary(options, (response) => {
-              if (response.assets) {
-                setProfileImage(response.assets[0].uri);
-              }
-            });
-          },
-        },
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-      ],
-      { cancelable: true }
-    );
+        body: new URLSearchParams(formData).toString(),
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        Alert.alert('Success', 'Profile saved successfully!');
+        setName('');
+        setEmail('');
+        setLocation('');
+        setJoinedDate(new Date());
+        setProfileImage(null); // Reset to default
+      } else {
+        Alert.alert('Error', result.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'There was an error submitting your profile: ' + error.message);
+    }
   };
 
   const handleUpdateProfile = () => {
-    // Handle update profile logic here
-    alert('Profile updated successfully!');
-  };
-
-  const handleSaveProfile = () => {
-    // Handle save profile logic here
-    alert('Profile saved successfully!');
+    Alert.alert('Profile updated successfully!');
   };
 
   const handleDeleteProfile = () => {
-    // Handle delete profile logic here
-    alert('Profile deleted successfully!');
+    Alert.alert('Profile deleted successfully!');
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Pass the toggleMenu function to the Fundheader component */}
       <Fundheader toggleMenu={toggleMenu} />
 
-      {/* Side Menu */}
       {isMenuVisible && (
         <View style={styles.menuOverlay}>
           <Fside visible={isMenuVisible} toggleMenu={toggleMenu} />
@@ -89,7 +112,7 @@ const FunderProfile = () => {
       {/* Profile Picture */}
       <View style={styles.profileContainer}>
         <Image
-          source={profileImage ? { uri: profileImage } : require('../../assets/images/man.jpg')} // Placeholder or selected image
+          source={profileImage ? { uri: profileImage } : require('../../assets/images/nonpro.jpg')} // Use selected image or default
           style={styles.profileImage}
         />
         <TouchableOpacity style={styles.cameraIcon} onPress={handleSelectImage}>
@@ -97,53 +120,56 @@ const FunderProfile = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Form */}
       <View style={styles.form}>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
-          placeholder="Enter your name"
+          placeholder=" Full Name"
           placeholderTextColor="#666"
         />
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="Enter your email"
+          placeholder=" Email / Fax"
           placeholderTextColor="#666"
           keyboardType="email-address"
         />
         <TextInput
           style={styles.input}
-          value={phone}
-          onChangeText={setPhone}
-          placeholder="Enter your phone number"
-          placeholderTextColor="#666"
-          keyboardType="phone-pad"
-        />
-        <TextInput
-          style={styles.input}
           value={location}
           onChangeText={setLocation}
-          placeholder="Enter your location"
+          placeholder=" Business Location"
           placeholderTextColor="#666"
         />
 
-        {/* Buttons Section */}
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+          <Text style={styles.datePickerText}>
+            Joined Date: {joinedDate.toDateString()}
+          </Text>
+        </TouchableOpacity>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={joinedDate}
+            mode="date"
+            display={Platform.OS === 'android' ? 'calendar' : 'default'}
+            onChange={handleDateChange}
+          />
+        )}
+
+        {/* Buttons */}
         <View style={styles.buttonContainer}>
-          {/* Update Button */}
           <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile}>
             <Text style={styles.buttonText}>Update</Text>
           </TouchableOpacity>
 
-          {/* Save Button */}
           <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
             <Text style={styles.buttonText}>Save</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Delete Profile Button */}
         <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteProfile}>
           <Text style={styles.deleteButtonText}>Delete Profile</Text>
         </TouchableOpacity>
@@ -159,12 +185,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   menuOverlay: {
-    position: 'absolute',  // Ensure it is positioned on top
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 100,  // High z-index to ensure it's on top of other elements
+    zIndex: 100,
     flexDirection: 'row',
   },
   overlay: {
@@ -203,7 +229,11 @@ const styles = StyleSheet.create({
     color: '#333',
     borderColor: '#000',
     borderWidth: 1,
-    marginBottom: 20,
+    marginBottom: 12,
+  },
+  datePickerText: {
+    color: '#333',
+    fontSize: 16,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -215,7 +245,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 20,
     flex: 1,
-    marginRight: 10, // Space between Update and Save buttons
+    marginRight: 10,
     alignItems: 'center',
   },
   saveButton: {

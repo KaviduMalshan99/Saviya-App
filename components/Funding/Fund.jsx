@@ -1,12 +1,48 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // for location icon
 import Fundheader from './Fundheader'; // Import Fundheader
-import Fside from './Fside'; // Import Fside
+import Fside from './Fside';
 
-const Fundraiser = ({ navigation }) => {
+const Fund = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('Fund'); // Active Tab State for Fund
   const [isMenuVisible, setMenuVisible] = useState(false); // Side menu visibility state
+  const [profiles, setProfiles] = useState([]); // State to store fetched profiles
+  const fadeAnim = useRef(new Animated.Value(0)).current; // Animated value for fade
+
+  // Fetch profile data from the server
+  const fetchProfiles = async () => {
+    try {
+      const response = await fetch('http://192.168.8.113/myapp/retrieve_funder_profiles.php'); // Replace with your IP and PHP file
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setProfiles(result.data); // Store the profiles in state
+      } else {
+        Alert.alert('Error', 'Failed to fetch profiles: ' + result.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Error fetching profiles: ' + error.message);
+    }
+  };
+
+  // Use useEffect to fetch profiles on component mount
+  useEffect(() => {
+    fetchProfiles();
+
+    // Trigger the fade-in animation when the component mounts
+    Animated.timing(fadeAnim, {
+      toValue: 1, // Fully visible
+      duration: 2000, // Animation duration in milliseconds
+      useNativeDriver: true, // Enable native driver for better performance
+    }).start();
+
+    const interval = setInterval(() => {
+      fetchProfiles();
+    }, 10000); // 10000 ms = 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Toggle function for the menu visibility
   const toggleMenu = () => {
@@ -14,8 +50,7 @@ const Fundraiser = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
+    <ScrollView style={styles.container}> 
       <Fundheader toggleMenu={toggleMenu} />
 
       {/* Side Menu */}
@@ -28,59 +63,36 @@ const Fundraiser = ({ navigation }) => {
 
       <Text style={styles.topicTitle}>Our Fundraisers</Text>
 
+      
+      <Animated.View style={[styles.descriptionContainer, { opacity: fadeAnim }]}>
+        <Text style={styles.descriptionText}>
+          "Together, we grow. Our fundraisers are dedicated to helping rural entrepreneurs like you succeed."
+        </Text>
+        <Text style={styles.descriptionText1}>
+          "ඔබේ ව්‍යවසායකත්වයේ සිහිනය වෙනුවෙන් අපේ සහයෝගය අප ඔබ වෙනුවෙන් !"
+        </Text>
+      </Animated.View>
+
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-        {/* Fundraiser Card 1 */}
-        <View style={styles.card}>
-          <Image
-            source={require('../../assets/images/Shalin.jpg')}
-            style={styles.profileImage}
-          />
-          <View style={styles.cardContent}>
-            <Text style={styles.userName}>Mr. Shalin Balasooriya</Text>
-            <Text style={styles.position}>Co-Founder at SPA CEYLON</Text>
-            <Text style={styles.date}>Mon, 15 Nov 2023 Joined</Text>
-            <View style={styles.locationContainer}>
-              <FontAwesome name="map-marker" size={16} color="gold" />
-              <Text style={styles.location}>The Park Ave, Kandy</Text>
+        {profiles.map((profile) => (
+          <View style={styles.card} key={profile.id}>
+            <Image
+              source={profile.profileImageUri ? { uri: profile.profileImageUri } : require('../../assets/images/nonpro.jpg')} // Use profile image or default
+              style={styles.profileImage}
+            />
+            <View style={styles.cardContent}>
+              <Text style={styles.userName}>{profile.name}</Text>
+              <Text style={styles.position}>Fundraiser</Text>
+              <Text style={styles.date}>{new Date(profile.joinedDate).toDateString()} Joined</Text>
+              <View style={styles.locationContainer}>
+                <FontAwesome name="map-marker" size={16} color="gold" />
+                <Text style={styles.location}>{profile.location}</Text>
+              </View>
             </View>
           </View>
-        </View>
-
-        {/* Fundraiser Card 2 */}
-        <View style={styles.card}>
-          <Image
-            source={require('../../assets/images/Otara.jpg')} // Path to the local image
-            style={styles.profileImage}
-          />
-          <View style={styles.cardContent}>
-            <Text style={styles.userName}>Mrs. Otara Gunawardhna</Text>
-            <Text style={styles.position}>Co-Founder Embark Pvt.Ltd</Text>
-            <Text style={styles.date}>Sun, 20 Oct 2023 Joined</Text>
-            <View style={styles.locationContainer}>
-              <FontAwesome name="map-marker" size={16} color="gold" />
-              <Text style={styles.location}>The Stella St, Colombo</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Fundraiser Card 3 */}
-        <View style={styles.card}>
-          <Image
-            source={require('../../assets/images/Yureni.jpg')} // Path to the local image
-            style={styles.profileImage}
-          />
-          <View style={styles.cardContent}>
-            <Text style={styles.userName}>Mrs. Yureni Noshika</Text>
-            <Text style={styles.position}>Co-Founder in HelperSL Pvt Ltd</Text>
-            <Text style={styles.date}>Thu, 20 June 2024 Joined</Text>
-            <View style={styles.locationContainer}>
-              <FontAwesome name="map-marker" size={16} color="gold" />
-              <Text style={styles.location}>The Stella St, Colombo</Text>
-            </View>
-          </View>
-        </View>
+        ))}
       </ScrollView>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -104,12 +116,33 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   topicTitle: {
-    fontSize: 22, // Font size for the title
+    fontSize: 22,
     fontWeight: '500',
     marginTop: 20,
     color: '#000',
     textAlign: 'center',
-    marginBottom: 25, // Margin below the title
+    marginBottom: 25,
+  },
+  descriptionContainer: {
+    marginBottom: 25,  // Space below the descriptions and above the cards
+    paddingHorizontal: 10,
+    textAlign: 'center',
+  },
+  descriptionText: {
+    fontSize: 23,
+    fontStyle: 'italic',
+    fontWeight: '600',
+    color: '#444',
+    textAlign: 'center',
+    marginVertical: 20,  // Space between the sentences
+  },
+  descriptionText1: {
+    fontSize: 25,
+    fontStyle: 'italic',
+    fontWeight: '600',
+    color: '#444',
+    textAlign: 'center',
+    marginVertical: 20,  // Space between the sentences
   },
   scrollView: {
     marginTop: 10,
@@ -118,9 +151,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     borderRadius: 10,
     padding: 10,
-    marginRight: 15,
+    marginRight: 15, // Spacing between horizontal cards
     width: 260,
     height: 440,
+    marginBottom:100,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -143,7 +177,7 @@ const styles = StyleSheet.create({
   },
   position: {
     fontSize: 16,
-    color: '#c0392b', // red color for the role
+    color: '#c0392b',
     marginBottom: 5,
   },
   date: {
@@ -157,9 +191,9 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    color: '#2980b9', // blue color for location
+    color: '#2980b9',
     marginLeft: 5,
   },
 });
 
-export default Fundraiser;
+export default Fund;

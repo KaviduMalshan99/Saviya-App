@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker'; // Import Image Picker
+import * as FileSystem from 'expo-file-system'; // Import File System for image handling
 import Fundheader from './Fundheader'; // Ensure this is the correct path
 import Fside from './Fside'; // Import FundSidemenu correctly
 
@@ -8,7 +10,7 @@ const Posting = ({ navigation }) => {
   const [contact, setContact] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-  const [activeTab, setActiveTab] = useState('Post'); // Active Tab State
+  const [selectedImage, setSelectedImage] = useState(null); // State to hold the selected image
   const [isMenuVisible, setMenuVisible] = useState(false); // Side menu visibility state
 
   // Toggle function for the menu visibility
@@ -16,10 +18,70 @@ const Posting = ({ navigation }) => {
     setMenuVisible(!isMenuVisible);
   };
 
-  // Function to handle the form submission
-  const handlePostSubmission = () => {
-    alert('Post Submitted!');
+  // Function to handle image selection from the gallery
+  const handleImagePicker = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'You need to allow access to the gallery to upload an image.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+    }
   };
+
+  // Function to handle the form submission
+  const handlePostSubmission = async () => {
+    if (!selectedImage) {
+      Alert.alert('Error', 'Please select an image.');
+      return;
+    }
+
+    // Create a new FormData object
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('contact', contact);
+    formData.append('location', location);
+    formData.append('description', description);
+
+    // Get the image file info
+    const fileInfo = await FileSystem.getInfoAsync(selectedImage);
+
+    // Add the image to the FormData
+    formData.append('image', {
+      uri: selectedImage,
+      type: 'image/jpeg', // Assuming it's a jpeg image
+      name: fileInfo.uri.split('/').pop(),
+    });
+
+    try {
+      const response = await fetch('http://192.168.8.113/myapp/submit_post.php', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (result.status === 'success') {
+        Alert.alert('Success', 'Post Submitted Successfully!');
+        setName('');
+        setContact('');
+        setLocation('');
+        setDescription('');
+        setSelectedImage(null);
+      } else {
+        Alert.alert('Error', result.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Error submitting post: ' + error.message);
+    }
+};
+
 
   return (
     <View style={styles.container}>
@@ -34,59 +96,60 @@ const Posting = ({ navigation }) => {
         </View>
       )}
 
-      
       <Text style={styles.Tophead}>Guide To Make Post</Text>
 
-      {/* Guideline Text */}
-      <View style={styles.guidelineContainer}>
-        <Text style={styles.bulletPoint}>
-          *පහත පෝරමය නිවැරදි දුරකථන අංකය හෝ ඊමේල් ලිපිනය සදහන් කර පැහැදිලි විස්තර ඇතුළත් කර පුරවන්න.මෙම පෝරමය ඔබට
-          මූලම්‍යමය වශයෙන් හෝ උපකාර කිරීමට සිටින ප්‍රධානීන්ටද පෙන්නම් කරයි.
-        </Text>
-      </View>
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.guidelineContainer}>
+          <Text style={styles.bulletPoint}>
+            *පහත පෝරමය නිවැරදි දුරකථන අංකය හෝ ඊමේල් ලිපිනය සදහන් කර පැහැදිලි විස්තර ඇතුළත් කර පුරවන්න.මෙම පෝරමය ඔබට
+            මූලම්‍යමය වශයෙන් හෝ උපකාර කිරීමට සිටින ප්‍රධානීන්ටද පෙන්නම් කරයි.
+          </Text>
+        </View>
 
-      {/* Form */}
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
-          placeholderTextColor="#666"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Contact No/Email"
-          value={contact}
-          onChangeText={setContact}
-          placeholderTextColor="#666"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Location"
-          value={location}
-          onChangeText={setLocation}
-          placeholderTextColor="#666"
-        />
-        <TextInput
-          style={[styles.input, styles.descriptionInput]}
-          placeholder="Your Message/Description"
-          value={description}
-          onChangeText={setDescription}
-          placeholderTextColor="#aaa"
-          multiline
-        />
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Name"
+            value={name}
+            onChangeText={setName}
+            placeholderTextColor="#666"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Contact No/Email"
+            value={contact}
+            onChangeText={setContact}
+            placeholderTextColor="#666"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Location"
+            value={location}
+            onChangeText={setLocation}
+            placeholderTextColor="#666"
+          />
+          <TextInput
+            style={[styles.input, styles.descriptionInput]}
+            placeholder="Your Message/Description"
+            value={description}
+            onChangeText={setDescription}
+            placeholderTextColor="#aaa"
+            multiline
+          />
 
-        {/* Upload Images Button */}
-        <TouchableOpacity style={styles.uploadButton}>
-          <Text style={styles.uploadText}>Upload Images</Text>
-        </TouchableOpacity>
+          {selectedImage && (
+            <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+          )}
 
-        {/* Post Button */}
-        <TouchableOpacity style={styles.postButton} onPress={handlePostSubmission}>
-          <Text style={styles.postButtonText}>Post</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity style={styles.uploadButton} onPress={handleImagePicker}>
+            <Text style={styles.uploadText}>Upload Images</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.postButton} onPress={handlePostSubmission}>
+            <Text style={styles.postButtonText}>Post</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -97,29 +160,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 20,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#000',
-    borderRadius: 25,
-    marginVertical: 20,
-    padding: 5,
-  },
-  tab: {
+  scrollContainer: {
     flex: 1,
-    padding: 8,
-    alignItems: 'center',
-  },
-  activeTab: {
-    backgroundColor: '#fff',
-    borderRadius: 25,
-  },
-  tabText: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  activeTabText: {
-    fontWeight: 'bold',
-    color: '#000',
   },
   guidelineContainer: {
     marginBottom: 15,
@@ -156,6 +198,12 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  selectedImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
   uploadButton: {
     backgroundColor: '#ccd5ff',
     borderRadius: 20,
@@ -182,12 +230,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   menuOverlay: {
-    position: 'absolute',  // Ensure it is positioned on top
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 100,  // High z-index to ensure it's on top of other elements
+    zIndex: 100,
     flexDirection: 'row',
   },
   overlay: {
