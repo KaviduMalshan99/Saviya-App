@@ -335,7 +335,7 @@ const Banking = ({ navigation }) => {
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
-    backgroundColor: '#fff', // Ensure the entire scroll view has a consistent background
+    backgroundColor: '#b8f6f1', // Ensure the entire scroll view has a consistent background
   },
   container: {
     paddingHorizontal: 20,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     paddingBottom:12,
     paddingTop:12,
     alignItems: 'center',
-    backgroundColor:'#E5E4E2',
+    backgroundColor:'#fff',
     borderRadius:10,
     justifyContent: 'center',
   },
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   card: {
-    backgroundColor: '#E5E4E2',
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 20,
     marginRight: 20, // Add margin between cards

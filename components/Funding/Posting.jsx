@@ -157,7 +157,7 @@ const Posting = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#b8f6f1',
     paddingHorizontal: 20,
   },
   scrollContainer: {
