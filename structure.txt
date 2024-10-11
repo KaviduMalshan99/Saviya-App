@@ -12,7 +12,6 @@ after loging redirect to the lerning dashboard and it show various things.that p
 
 this is the main structure. did you understand my app file structure?
 
-
 saviya/
 │
 ├── assets/
@@ -33,7 +32,15 @@ saviya/
 │   │   └── OnboardingNav.js (for navigation between onboarding screens)
 │   ├── LearnerDashboard/
 │   │   ├── LearnerHome.js
-│   │   ├── Courses.js
+│   │   ├── Courses/
+│   │   │   ├── CourseList.js (displays sections like My Courses, Trending, Paid, etc.)
+│   │   │   ├── CourseDetail.js (displays individual course details with tabs)
+│   │   │   ├── CourseDescription.js (displays course description)
+│   │   │   ├── CourseLessons.js (displays lessons/chapter list)
+│   │   │   ├── CourseReviews.js (displays course reviews)
+│   │   │   ├── FinishCourse.js (finish course and download certificate)
+│   │   │   └── ProgressTracker.js (tracks course completion progress)
+│   │   ├── Courses.js (entry point for the Courses section)
 │   │   ├── Events.js
 │   │   ├── MarketHome.js
 │   │   └── Community.js
@@ -47,24 +54,71 @@ saviya/
 │       ├── Sidebar.js
 │       ├── Navbar.js
 │       ├── CartIcon.js
-│       └── NotificationIcon.js
+│       ├── NotificationIcon.js
+│       └── ProgressBar.js (used to show the user's course progress)
 │
 ├── navigation/
 │   ├── AppNavigator.js (includes main navigation logic)
 │   ├── AuthNavigator.js (handles authentication flow)
-│   └── DashboardNavigator.js (handles learner and buyer dashboards)
+│   ├── DashboardNavigator.js (handles learner and buyer dashboards)
+│   └── CourseNavigator.js (handles course-related navigation)
 │
 ├── screens/
 │   ├── SplashScreen.js
-│   └── ... (other screens if needed)
+│   ├── CertificateScreen.js (screen to download certificate)
+│   └── CourseCategoriesScreen.js (screen displaying course categories)
 │
 ├── utils/
 │   ├── api.js (for API calls)
-│   └── helpers.js (utility functions)
+│   └── helpers.js (utility functions like formatting, calculations)
 │
 ├── App.js
 ├── app.json
 └── package.json
 
+
+database create
+
+user(
+  CREATE TABLE IF NOT EXISTS `user` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `firstname` VARCHAR(100) DEFAULT NULL,
+  `lastname` VARCHAR(100) DEFAULT NULL,
+  `emailaddress` VARCHAR(255) UNIQUE NOT NULL,
+  `contactno` VARCHAR(15) DEFAULT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  
+  -- Profile section fields
+  `image` VARCHAR(255) DEFAULT NULL,
+  `address_no` VARCHAR(50) DEFAULT NULL,        -- Address number (e.g., 123A)
+  `street` VARCHAR(100) DEFAULT NULL,           -- Street name
+  `city` VARCHAR(100) DEFAULT NULL,             -- City name
+  `province` VARCHAR(100) DEFAULT NULL,         -- Province or region
+  `gender` ENUM('Male', 'Female', 'Other') DEFAULT NULL,
+  `dateofbirth` DATE DEFAULT NULL,
+  `user_role` ENUM('Student', 'Instructor', 'Admin', 'Business') NOT NULL DEFAULT 'Student',
+  
+  -- Additional fields for verification and business
+  `otp_verification` BOOLEAN DEFAULT 0,
+  `business_name` VARCHAR(255) DEFAULT NULL,
+  `business_registration` VARCHAR(255) DEFAULT NULL,
+  `current_job` VARCHAR(255) DEFAULT NULL,
+
+  -- Timestamps
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+)
+
+
+
+i create this app using  npx create-expo-app saviya --template blank 
+
+after i run this
+npx expo install react-dom react-native-web @expo/metro-runtime
+
+after 
+npx expo start these
 
 
