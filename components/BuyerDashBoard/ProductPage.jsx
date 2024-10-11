@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet, Dimensions, Text, SafeAreaView, Touchable
 import Header from './Header'; // Assume you have a Header component
 import { useRoute, useNavigation } from '@react-navigation/native'; // Added useNavigation to navigate between screens
 import SideMenu from './SideMenu'; // Ensure the correct path for SideMenu
+import Icon from 'react-native-vector-icons/FontAwesome'; // or use FontAwesome5 if you prefer
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -13,14 +14,16 @@ const ProductPage = () => {
 
   // State for product details and loading status
   const [product, setProduct] = useState({});
-  const [isLoading, setIsLoading] = useState(true); 
-  const [isError, setIsError] = useState(false); // Add the isError state here
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false); 
   const [selectedQuantity, setSelectedQuantity] = useState(1); // Default quantity is 1
   const [selectedColor, setSelectedColor] = useState(''); // Default color selection
-  const [currentMainImages, setCurrentMainImages] = useState([]); // Track the current images for the slider
+  const [currentMainImages, setCurrentMainImages] = useState([]); 
   const [currentImageIndex, setCurrentImageIndex] = useState(0); 
   const [menuVisible, setMenuVisible] = useState(false); // State for side menu visibility
+  const [reviews, setReviews] = useState([]); // State to hold reviews
 
+  // Fetch product details
   const fetchProductDetails = async (id) => {
     try {
       const response = await fetch(`http://192.168.1.6/product_app/get_product.php?product_id=${id}`);
@@ -28,31 +31,54 @@ const ProductPage = () => {
       
       if (data && !data.error) {
         setProduct(data);  
-        setCurrentMainImages(data.main_images); // Set the initial main images for the slider
-        setSelectedColor(''); // No color selected by default
+        setCurrentMainImages(data.main_images); 
+        setSelectedColor(''); 
         setIsLoading(false);  
       } else {
-        setIsError(true); // Set error state to true when no data or an error is received
+        setIsError(true); 
         setIsLoading(false);  
       }
     } catch (error) {
-      setIsError(true); // Set error state to true when an error occurs
+      setIsError(true); 
       setIsLoading(false);  
     }
   };
 
+  // Fetch reviews based on product name
+  const fetchReviews = async (productName) => {
+    try {
+      const response = await fetch(`http://192.168.1.6/product_app/get_reviews.php?product_name=${productName}`);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setReviews(data.reviews);
+      } else {
+        setReviews([]); 
+      }
+    } catch (error) {
+      setReviews([]); 
+    }
+  };
+
+  // Call fetchProductDetails and fetchReviews when productId changes
   useEffect(() => {
     if (productId) {
       fetchProductDetails(productId);
     }
   }, [productId]);
 
+  useEffect(() => {
+    if (product.product_name) {
+      fetchReviews(product.product_name);
+    }
+  }, [product.product_name]);
+
   const handleColorChange = (color) => {
     setSelectedColor(color);
     if (product.color_images[color]) {
-      setCurrentMainImages([product.color_images[color]]); // Change to the color image
+      setCurrentMainImages([product.color_images[color]]); 
     } else {
-      setCurrentMainImages(product.main_images); // Reset to main images if no color image exists
+      setCurrentMainImages(product.main_images); 
     }
   };
 
@@ -61,7 +87,6 @@ const ProductPage = () => {
       if (selectedQuantity < parseInt(product.stock_quantity)) {
         setSelectedQuantity(selectedQuantity + 1);
       } else {
-        // Show alert if the quantity exceeds available stock
         Alert.alert(
           "Stock Limit Reached",
           `Only ${product.stock_quantity} items available in stock.`,
@@ -73,8 +98,42 @@ const ProductPage = () => {
     }
   };
 
+  const handleAddToCart = async () => {
+    if ((product.category === 'මැටි බඳුන්' || product.category === 'මල් පැල') && !selectedColor) {
+      Alert.alert("Please Select a Color", "You need to select a color before adding to cart.");
+      return;
+    }
+
+    const cartItem = {
+      product_name: product.product_name,
+      color: selectedColor,
+      quantity: selectedQuantity,
+      price: product.price,
+      image: currentMainImages[0],
+      email: 'vgamaka@gmail.com', // Fixed email for now
+    };
+
+    try {
+      const response = await fetch('http://192.168.1.6/product_app/add_to_cart.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(cartItem).toString(),
+      });
+
+      const result = await response.json();
+      if (result.status === 'success') {
+        Alert.alert('Success', 'Product added to cart!');
+      } else {
+        Alert.alert('Error', 'Failed to add product to cart.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred while adding the product to the cart.');
+    }
+  };
+
   const handleBuyNow = () => {
-    // Ensure that the color is selected for specific categories
     if ((product.category === 'මැටි බඳුන්' || product.category === 'මල් පැල') && !selectedColor) {
       Alert.alert(
         "Please Select a Color",
@@ -84,12 +143,11 @@ const ProductPage = () => {
       return;
     }
 
-    // Navigate to the OrderPage with the product details
     navigation.navigate('OrderPage', {
       productId,
       productName: product.product_name,
       productPrice: product.price,
-      productImage: currentMainImages[0], // Use the first image (or selected color image)
+      productImage: currentMainImages[0], 
       selectedColor,
       selectedQuantity,
     });
@@ -101,12 +159,10 @@ const ProductPage = () => {
     setCurrentImageIndex(index);
   };
 
-  // Function to toggle the side menu
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
   };
 
-  // Render error state if fetching data failed
   if (isError) {
     return (
       <SafeAreaView style={styles.container}>
@@ -116,7 +172,6 @@ const ProductPage = () => {
     );
   }
 
-  // Render loading state
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -196,24 +251,6 @@ const ProductPage = () => {
           </View>
         </View>
 
-        {/* Color Options */}
-        {(product.category === 'මැටි බඳුන්' || product.category === 'මල් පැල') && (
-          <View style={styles.colorOptions}>
-            <Text style={styles.colorLabel}>Color: </Text> 
-            <View style={styles.colorSelector}>
-              {Object.keys(product.color_images || {}).map((color) => (
-                <TouchableOpacity
-                  key={color}
-                  style={[styles.colorOption, selectedColor === color && styles.selectedColor]}
-                  onPress={() => handleColorChange(color)} // Handle color change
-                >
-                  <Text style={styles.colorText}>{color}</Text> 
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
         {/* Description Section */}
         <View style={styles.descriptionContainer}>
           <Text style={styles.descriptionTitle}>Description</Text>
@@ -223,7 +260,7 @@ const ProductPage = () => {
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.addToCartButton}>
+          <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
             <Text style={styles.buttonText}>+ Add To Cart</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.buyNowButton} onPress={handleBuyNow}>
@@ -234,13 +271,37 @@ const ProductPage = () => {
         {/* Review Section */}
         <View style={styles.reviewSection}>
           <Text style={styles.reviewTitle}>Reviews</Text>
+
+          {reviews.length > 0 ? (
+            reviews.map((review, index) => (
+              <View key={index} style={styles.reviewItem}>
+                <Text style={styles.reviewAuthor}>{review.customer_name} ({review.email})</Text>
+                
+                <View style={styles.starRatingContainer}>
+                  {[...Array(5)].map((_, i) => (
+                    <Icon
+                      key={i}
+                      name={i < review.stars ? 'star' : 'star-o'}
+                      size={16}
+                      color="#FFD700"
+                      style={styles.starIcon}
+                    />
+                  ))}
+                </View>
+                
+                <Text style={styles.reviewComment}>{review.comment}</Text>
+                <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString()}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noReviewsText}>No reviews for this product yet.</Text>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-// Updated modern styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -315,32 +376,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  colorOptions: {
-    marginVertical: 20,
-  },
-  colorLabel: {
-    fontSize: 18,
-    color: '#333',
-    fontWeight: '600',
-  },
-  colorSelector: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
-  colorOption: {
-    padding: 10,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    marginRight: 10,
-  },
-  selectedColor: {
-    borderColor: '#1E90FF',
-    borderWidth: 2,
-  },
-  colorText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
   descriptionContainer: {
     marginVertical: 20,
   },
@@ -392,6 +427,52 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 15,
+    color: '#333',
+  },
+  reviewItem: {
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  reviewAuthor: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  starRatingContainer: {
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  starIcon: {
+    marginRight: 2,
+  },
+  reviewRating: {
+    fontSize: 14,
+    color: '#FFD700',
+  },
+  reviewComment: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 5,
+    lineHeight: 20,
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 5,
+  },
+  noReviewsText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 10,
   },
   loadingContainer: {
     flex: 1,
@@ -407,3 +488,4 @@ const styles = StyleSheet.create({
 });
 
 export default ProductPage;
+

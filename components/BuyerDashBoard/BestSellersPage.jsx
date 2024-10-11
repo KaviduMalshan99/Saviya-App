@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, Text, SafeAreaView, Image, ActivityIndicator } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions, Text, SafeAreaView, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Header from './Header'; // Ensure this points to your Header component
 import SideMenu from './SideMenu'; // Ensure SideMenu is imported
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation for navigation
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -10,6 +11,7 @@ const BestSellersPage = () => {
   const [bestSellers, setBestSellers] = useState([]);  // State to hold best sellers
   const [loading, setLoading] = useState(true);  // Loading state
   const [error, setError] = useState(null);  // Error state
+  const navigation = useNavigation(); // Use navigation to go to ProductPage
 
   // Function to fetch best-selling products from the backend
   const fetchBestSellers = async () => {
@@ -60,7 +62,11 @@ const BestSellersPage = () => {
             <Text style={styles.errorText}>{error}</Text>
           ) : (
             bestSellers.map((product, index) => (
-              <View key={product.product_name} style={styles.productItem}>
+              <TouchableOpacity 
+                key={product.product_id} 
+                style={styles.productItem}
+                onPress={() => navigation.navigate('ProductPage', { productId: product.product_id })} // Navigate to ProductPage
+              >
                 {/* Display totalSold as a Badge */}
                 {product.total_sold && (
                   <View style={styles.badge}>
@@ -84,7 +90,7 @@ const BestSellersPage = () => {
 
                 <Text style={styles.productName}>{product.product_name}</Text>
                 <Text style={styles.productPrice}>LKR {product.price}</Text>
-              </View>
+              </TouchableOpacity>
             ))
           )}
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, Text, SafeAreaView, Image, ActivityIndicator } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions, Text, SafeAreaView, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Header from './Header'; // Ensure this points to your Header component
 import SideMenu from './SideMenu'; // Ensure SideMenu is imported
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation for navigating to ProductPage
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -10,6 +11,7 @@ const NewArrivalsPage = () => {
   const [newArrivals, setNewArrivals] = useState([]);  // State to hold new products
   const [loading, setLoading] = useState(true);  // Loading state
   const [error, setError] = useState(null);  // Error state
+  const navigation = useNavigation(); // Navigation hook for ProductPage
 
   // Function to fetch new arrival products from the backend
   const fetchNewArrivals = async () => {
@@ -62,7 +64,10 @@ const NewArrivalsPage = () => {
           ) : (
             newArrivals.map((product, index) => (
               <React.Fragment key={product.product_id}>
-                <View style={styles.productItem}>
+                <TouchableOpacity
+                  style={styles.productItem}
+                  onPress={() => navigation.navigate('ProductPage', { productId: product.product_id })}
+                >
                   {/* Correctly render the first main image */}
                   {product.main_image ? (
                     <Image
@@ -80,7 +85,7 @@ const NewArrivalsPage = () => {
                   )}
                   <Text style={styles.productName}>{product.name}</Text>
                   <Text style={styles.productPrice}>LKR {product.price}</Text>
-                </View>
+                </TouchableOpacity>
 
                 {/* Insert a custom full-width image after the 4th product */}
                 {index === 3 && (

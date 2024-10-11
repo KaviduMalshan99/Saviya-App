@@ -22,9 +22,13 @@ import OrderPage from '../components/BuyerDashBoard/OrderPage'; // Import BestSe
 import CheckoutPage from '../components/BuyerDashBoard/CheckoutPage'; // Import BestSellersPage
 import OrderSuccessPage from '../components/BuyerDashBoard/OrderSuccessPage'; // Import BestSellersPage
 import OrderFailurePage from '../components/BuyerDashBoard/OrderFailurePage'; // Import BestSellersPage
+import OrderHistoryPage from '../components/BuyerDashBoard/OrderHistoryPage'; // Import BestSellersPage
+import LeaveReviewPage from '../components/BuyerDashBoard/LeaveReviewPage'; // Import BestSellersPage
+import CartPage from '../components/BuyerDashBoard/CartPage'; // Import BestSellersPage
+import SearchResultPage from '../components/BuyerDashBoard/SearchResultPage'; // Import BestSellersPage
 
-CheckoutPage
-OrderPage
+
+
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -50,6 +54,10 @@ const AppNavigator = () => {
       <Stack.Screen name="CheckoutPage" component={CheckoutPage} />
       <Stack.Screen name="OrderSuccessPage" component={OrderSuccessPage} />
       <Stack.Screen name="OrderFailurePage" component={OrderFailurePage} />
+      <Stack.Screen name="OrderHistoryPage" component={OrderHistoryPage} />
+      <Stack.Screen name="LeaveReviewPage" component={LeaveReviewPage} />
+      <Stack.Screen name="CartPage" component={CartPage} />
+      <Stack.Screen name="SearchResultPage" component={SearchResultPage} />
 
 
 

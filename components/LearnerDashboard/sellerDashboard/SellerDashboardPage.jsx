@@ -1,37 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Dimensions, Text, SafeAreaView, TouchableOpacity, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; 
+import { useNavigation } from '@react-navigation/native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const orders = [
-  {
-    id: 1,
-    customerName: 'Grace Martin',
-    price: 'LKR 2000.00',
-    orderDate: 'July',
-    productImage: '', 
-  },
-  {
-    id: 2,
-    customerName: 'Lucas Anderson',
-    price: 'LKR 3000.00',
-    orderDate: 'July',
-    productImage: '', 
-  },
-  {
-    id: 3,
-    customerName: 'Isabella Brown',
-    price: 'LKR 5000.00',
-    orderDate: 'July',
-    productImage: '', 
-  },
-];
-
 const SellerDashboardPage = () => {
   const navigation = useNavigation();
+  const [orders, setOrders] = useState([]);  // Default to an empty array
+  const [products, setProducts] = useState([]);  // Default to an empty array
   const [menuVisible, setMenuVisible] = useState(false);
 
+  useEffect(() => {
+    fetchOrders();
+    fetchProducts();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('http://192.168.1.6/product_app/get_orders.php');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setOrders(data);  // Set orders if data is valid
+      } else {
+        console.error('Unexpected response format:', data);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://192.168.1.6/product_app/get_productss.php');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setProducts(data);  // Set products if data is valid
+      } else {
+        console.error('Unexpected response format:', data);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
 
   const navigateToAddProduct = () => {
     navigation.navigate('AddProductPage');
@@ -39,7 +49,6 @@ const SellerDashboardPage = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.pageTitle}>විකුණුම් පුවරුව</Text>
 
@@ -66,25 +75,58 @@ const SellerDashboardPage = () => {
           </View>
         </View>
 
+        {/* Orders Section */}
         <Text style={styles.sectionTitle}>ගනුදෙනු</Text>
-        {orders.map((order) => (
-          <View key={order.id} style={styles.orderRow}>
-            <View style={styles.orderDetails}>
-              <View style={styles.orderImagePlaceholder} />
-              <View style={styles.orderInfo}>
-                <Text style={styles.orderCustomer}>{order.customerName}</Text>
-                <Text style={styles.orderDescription}>Transfer to</Text>
+        {orders.length > 0 ? (
+          orders.map((order) => (
+            <View key={order.id} style={styles.orderRow}>
+              <View style={styles.orderDetails}>
+                {/* Render product image if available, else fallback */}
+                {order.product_image ? (
+                  <Image source={{ uri: order.product_image }} style={styles.orderImage} />
+                ) : (
+                  <View style={styles.orderImagePlaceholder} />
+                )}
+                <View style={styles.orderInfo}>
+                  <Text style={styles.orderCustomer}>{order.customer_name}</Text>
+                  <Text style={styles.orderDescription}>Transfer to</Text>
+                </View>
+              </View>
+              <View style={styles.orderPriceContainer}>
+                <Text style={styles.orderPrice}>{order.seller_total ? `LKR ${order.seller_total}` : 'N/A'}</Text>
+                <Text style={styles.orderDate}>{order.created_at}</Text>
               </View>
             </View>
-            <View style={styles.orderPriceContainer}>
-              <Text style={styles.orderPrice}>{order.price}</Text>
-              <Text style={styles.orderDate}>{order.orderDate}</Text>
+          ))
+        ) : (
+          <Text>No orders found</Text>
+        )}
+
+        {/* Products Section */}
+        <Text style={styles.sectionTitle}>නිෂ්පාදන</Text>
+        {products.length > 0 ? (
+          products.map((product) => (
+            <View key={product.id} style={styles.productRow}>
+              <View style={styles.productDetails}>
+                {/* Render product image if available, else fallback */}
+                {product.main_images ? (
+                  <Image source={{ uri: product.main_images }} style={styles.productImage} />
+                ) : (
+                  <View style={styles.productImagePlaceholder} />
+                )}
+                <View style={styles.productInfo}>
+                  <Text style={styles.productName}>{product.product_name}</Text>
+                  <Text style={styles.productPrice}>LKR {product.price}</Text>
+                </View>
+              </View>
             </View>
-          </View>
-        ))}
+          ))
+        ) : (
+          <Text>No products found</Text>
+        )}
       </ScrollView>
 
-      {menuVisible && <SideMenu visible={menuVisible} toggleMenu={toggleMenu} />}
+      {menuVisible && <SideMenu visible={menuVisible} toggleMenu={setMenuVisible} />}
     </SafeAreaView>
   );
 };
@@ -175,6 +217,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  orderImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
   orderImagePlaceholder: {
     width: 50,
     height: 50,
@@ -202,6 +250,44 @@ const styles = StyleSheet.create({
   },
   orderDate: {
     fontSize: 12,
+    color: '#888',
+  },
+  productRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    elevation: 2,
+  },
+  productDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  productImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
+  productImagePlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#DDD',
+    marginRight: 15,
+  },
+  productInfo: {
+    justifyContent: 'center',
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  productPrice: {
+    fontSize: 14,
     color: '#888',
   },
 });

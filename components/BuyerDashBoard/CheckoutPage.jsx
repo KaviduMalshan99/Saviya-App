@@ -59,6 +59,7 @@ const CheckoutPage = () => {
 
     const sellerTotal = (total - deliveryFee) * 0.95;
 
+    // Log all the data before sending
     console.log({
       productName,
       productImage,
@@ -75,7 +76,7 @@ const CheckoutPage = () => {
       subtotal,
       total,
       sellerTotal,
-    });  // Log all the data before sending
+    });  
 
     // Send order data to PHP backend
     fetch('http://192.168.1.6/product_app/save_order.php', {
@@ -84,7 +85,7 @@ const CheckoutPage = () => {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        product_name: productName,
+        product_name: productName,  // Ensure field names match with backend
         product_image: productImage,
         price: productPrice,
         color: selectedColor,
@@ -99,24 +100,29 @@ const CheckoutPage = () => {
         subtotal: subtotal,
         total: total,
         seller_total: sellerTotal,
-      }),
+      }).toString(),  // Ensure the data is serialized as URL parameters
     })
     .then(response => response.json())
     .then(data => {
+      console.log('Response data:', data);
       if (data.status === 'success') {
         // Navigate to OrderSuccessPage
         navigation.navigate('OrderSuccessPage');
       } else {
+        // Handle error response
+        console.log('Order failed:', data.message);
+        Alert.alert('Order failed', data.message);
         // Navigate to OrderFailurePage if there's an error
         navigation.navigate('OrderFailurePage');
       }
     })
     .catch(error => {
+      console.error('Error:', error.message);
       Alert.alert('Error', 'Error: ' + error.message);
       // Navigate to OrderFailurePage on fetch error
       navigation.navigate('OrderFailurePage');
     });
-  };  
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -134,7 +140,7 @@ const CheckoutPage = () => {
           <View style={styles.orderSummary}>
             <Text style={styles.productName}>{productName}</Text>
             <Text style={styles.productDetails}>
-              {quantity} x LKR {parseFloat(productPrice).toFixed(2)} 
+              {quantity} x LKR {parseFloat(productPrice).toFixed(2)}
             </Text>
           </View>
 

@@ -35,6 +35,12 @@ const SideMenu = ({ visible, toggleMenu }) => {
       </View>
 
       <View style={styles.menuItems}>
+      <TouchableOpacity onPress={() => { 
+          toggleMenu(); 
+          navigation.navigate('BuyerHome'); 
+        }}>
+          <Text style={styles.menuItem}>{" >  Home"}</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={() => { 
           toggleMenu(); 
           navigation.navigate('CategoryPage'); 
@@ -59,10 +65,13 @@ const SideMenu = ({ visible, toggleMenu }) => {
         </TouchableOpacity>
 
         <TouchableOpacity>
-          <Text style={styles.menuItem}>{" >  විශේෂාංග නිෂ්පාදන"}</Text>
+          <Text style={styles.menuItem}>{" >  විශේෂාංග නිෂ්පාදන (Coming Soon)"}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => { 
+          toggleMenu(); 
+          navigation.navigate('OrderHistoryPage'); 
+        }}>
           <Text style={styles.menuItem}>{" >  ඇණවුම්"}</Text>
         </TouchableOpacity>
       </View>
