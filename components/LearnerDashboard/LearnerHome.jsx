@@ -100,14 +100,14 @@ const styles = StyleSheet.create({
     alignItems: 'center', // Center the content horizontally
   },
   mainContent: {
-    width: '87%', // Reduce the width to allow padding on the sides
+    width: '95%', // Reduce the width to allow padding on the sides
   },
   contentContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)', // Transparent white background for the whole section
     borderRadius: 20, // Rounded corners for the container
     padding: 10, // Padding inside the container
     marginHorizontal: 5, // Margin on the sides for spacing
-    marginTop: 10, // Space from the top
+    marginTop: 5, // Space from the top
     alignItems: 'center', // Center the content horizontally
   },
   topWrapper: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Lato-Regular',
   },
   cardsContainer: {
-    marginTop: 10,
+    marginTop: 2,
   },
   card: {
     width: 350, // Width of each card
