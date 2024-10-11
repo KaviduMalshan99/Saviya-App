@@ -161,18 +161,18 @@ const FunderProfile = () => {
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile}>
+          {/* <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile}>
             <Text style={styles.buttonText}>Update</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
-            <Text style={styles.buttonText}>Save</Text>
+            <Text style={styles.buttonText}>Save Profile</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteProfile}>
+        {/* <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteProfile}>
           <Text style={styles.deleteButtonText}>Delete Profile</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
@@ -253,6 +253,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 20,
     flex: 1,
+    marginTop:35,
     alignItems: 'center',
   },
   buttonText: {

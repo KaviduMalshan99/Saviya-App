@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontStyle: 'italic',
     fontWeight: '600',
-    color: '#004C00',
+    color: '#444',
     textAlign: 'center',
     marginVertical: 20,  // Space between the sentences
   },
