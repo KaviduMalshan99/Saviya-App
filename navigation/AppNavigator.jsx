@@ -13,6 +13,10 @@ import Events from '../components/LearnerDashboard/Events';
 import Community from '../components/LearnerDashboard/Community';
 import MarkerPlace from '../components/LearnerDashboard/MarketHome';
 import Courses from '../components/LearnerDashboard/Courses';
+import BuyerHome from '../components/BuyerDashBoard/BuyerHome';
+import LoginBuyer1 from '../components/Auth/LoginBuyer1';
+import CategoryPage from '../components/BuyerDashBoard/CategoryPage';
+import ClayPotCategoryPage from '../components/BuyerDashBoard/ClayPotCategoryPage'; // Import the new page
 
 import Profile from '../components/OtherPages/Profile';
 import HelpSupport from '../components/OtherPages/HelpSupport';
@@ -48,6 +52,7 @@ const AppNavigator = () => {
       {/* Authentication Screens */}
       <Stack.Screen name="WhoAreYou" component={WhoAreYouScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="LoginBuyer1" component={LoginBuyer1} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       
       {/* Learner Dashboard Screens */}

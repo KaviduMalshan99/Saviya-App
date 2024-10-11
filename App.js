@@ -1,3 +1,5 @@
+import 'react-native-gesture-handler'; // Must be at the top for gesture handler to work properly
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
@@ -45,5 +47,3 @@ export default function App() {
     </UserProvider>
   );
 }
-
-
