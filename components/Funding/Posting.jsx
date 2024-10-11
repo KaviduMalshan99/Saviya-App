@@ -96,7 +96,7 @@ const Posting = ({ navigation }) => {
         </View>
       )}
 
-      <Text style={styles.Tophead}>Guide To Make Post</Text>
+      <Text style={styles.Tophead}>Make Post</Text>
 
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.guidelineContainer}>
@@ -167,18 +167,18 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   bulletPoint: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#000',
     marginBottom: 10,
     fontWeight: '500',
   },
   Tophead: {
-    fontSize: 23,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '500',
     paddingVertical: 10,
-    paddingHorizontal: 70,
-    paddingBottom: 30,
-    paddingTop: 30,
+    paddingHorizontal: 120,
+    paddingBottom: 25,
+    paddingTop: 25,
   },
   form: {
     flex: 1,
@@ -188,19 +188,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderColor: '#000',
     borderWidth: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    fontSize: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    fontSize: 18,
     color: '#000',
     marginBottom: 10,
   },
   descriptionInput: {
-    height: 100,
+    height: 80,
     textAlignVertical: 'top',
   },
   selectedImage: {
-    width: '100%',
-    height: 200,
+    width: '90%',
+    height: 150,
     borderRadius: 10,
     marginBottom: 20,
   },

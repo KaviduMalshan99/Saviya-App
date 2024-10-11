@@ -211,11 +211,11 @@ const styles = StyleSheet.create({
   },
   cameraIcon: {
     position: 'absolute',
-    bottom: 0,
-    right: 10,
+    bottom: 5,
+    right: 90,
     backgroundColor: '#000',
     borderRadius: 15,
-    padding: 5,
+    padding: 6,
   },
   form: {
     marginTop: 20,

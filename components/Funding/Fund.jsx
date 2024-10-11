@@ -92,6 +92,14 @@ const Fund = ({ navigation }) => {
           </View>
         ))}
       </ScrollView>
+      <Animated.View style={[styles.descriptionContainer, { opacity: fadeAnim }]}>
+          <Text style={styles.descriptionText1}>
+            "Our fundraisers are dedicated to your success. With their help, your journey to growth and achievement is unstoppable."
+          </Text>
+          <Text style={styles.descriptionText1}>
+          "Boost your profits by staying informed with up-to-date exchange rates and banking support."
+          </Text>
+        </Animated.View>
     </ScrollView>
   );
 };
@@ -124,23 +132,23 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   descriptionContainer: {
-    marginBottom: 25,  // Space below the descriptions and above the cards
+    marginBottom: 22,  // Space below the descriptions and above the cards
     paddingHorizontal: 10,
     textAlign: 'center',
   },
   descriptionText: {
-    fontSize: 23,
+    fontSize: 22,
     fontStyle: 'italic',
     fontWeight: '600',
-    color: '#444',
+    color: '#004C00',
     textAlign: 'center',
     marginVertical: 20,  // Space between the sentences
   },
   descriptionText1: {
-    fontSize: 25,
+    fontSize: 22,
     fontStyle: 'italic',
     fontWeight: '600',
-    color: '#444',
+    color: '#004C00',
     textAlign: 'center',
     marginVertical: 20,  // Space between the sentences
   },
@@ -182,7 +190,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 14,
-    color: '#666',
+    color: '#FFFF00',
     marginBottom: 5,
   },
   locationContainer: {
