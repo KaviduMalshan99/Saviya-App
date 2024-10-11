@@ -1,23 +1,15 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Slider from '@react-native-community/slider'; // For the price range slider
-import { useNavigation } from '@react-navigation/native'; // Import navigation hook
-
+import Slider from '@react-native-community/slider';
+import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
 const CategoryDetailsScreen = ({ route }) => {
-  const { category } = route.params;
+  const { category } = route.params;  // Get the passed category from the previous screen
   const bottomSheetRef = useRef(null);
-   // Access navigation
-   const navigation = useNavigation();
-
-  // Define snap points for the bottom sheet
-  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
-
-  const handleSheetChanges = useCallback((index) => {
-    console.log('BottomSheet position changed to:', index);
-  }, []);
+  const navigation = useNavigation();
 
   // Filter state (for managing selection)
   const [selectedEventType, setSelectedEventType] = useState(null);
@@ -26,10 +18,41 @@ const CategoryDetailsScreen = ({ route }) => {
   const [selectedPrice, setSelectedPrice] = useState(60); // Default price range
   const [selectedMode, setSelectedMode] = useState(null);
 
-   // Add a function to handle the navigation to EventLocationScreen
-   const navigateToEventLocation = () => {
-    navigation.navigate('EventLocationScreen'); // Assuming you have 'EventLocationScreen' set up in your navigation stack
-  };
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Define snap points for the bottom sheet
+  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
+
+  // Fetch events based on category when the screen loads
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://172.20.10.2/event-api/eventstype.php`, {
+          params: {
+            event_type: category.title,  // Pass the event category to the API
+          },
+        });
+        setEvents(response.data);  // Store the fetched events in state
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [category.title]);
+
+  const handleSheetChanges = useCallback((index) => {
+    console.log('BottomSheet position changed to:', index);
+  }, []);
+
+    // Add a function to handle the navigation to EventLocationScreen
+    const navigateToEventLocation = () => {
+      navigation.navigate('EventLocationScreen'); // Assuming you have 'EventLocationScreen' set up in your navigation stack
+    };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -37,19 +60,27 @@ const CategoryDetailsScreen = ({ route }) => {
         <Text style={styles.title}>{category.title} Events</Text>
         <Image source={category.image} style={styles.headerImage} />
 
-        {/* Display event details */}
-        <View style={styles.eventCard}>
-          <Image source={{ uri: "https://example.com/event1.jpg" }} style={styles.eventImage} />
-          <View style={styles.eventInfo}>
-            <Text style={styles.eventTitle}>How to be the best!</Text>
-            <Text style={styles.eventPrice}>Rs.100.00 / Ticket</Text>
-            <Text style={styles.eventDate}>Thu, 29 Oct 2024</Text>
-            <Text style={styles.eventLocation}>The Taprobane, Colombo</Text>
-          </View>
-        </View>
+        {/* Loading state */}
+        {loading ? (
+          <Text>Loading events...</Text>
+        ) : events.length > 0 ? (
+          events.map((event) => (
+            <View style={styles.eventCard} key={event.id}>
+              <Image source={{ uri: event.image_url }} style={styles.eventImage} />
+              <View style={styles.eventInfo}>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                <Text style={styles.eventPrice}>Rs.{event.price} / Ticket</Text>
+                <Text style={styles.eventDate}>{new Date(event.date).toLocaleDateString()}</Text>
+                <Text style={styles.eventLocation}>{event.location}</Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text>No events found for this category.</Text>
+        )}
 
-        {/* Button to trigger the filter bottom sheet */}
-        <TouchableOpacity
+         {/* Button to trigger the filter bottom sheet */}
+         <TouchableOpacity
           style={styles.filterButton}
           onPress={() => bottomSheetRef.current?.expand()}
         >
@@ -240,7 +271,7 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: 100,
-    height: 100,
+    // height: 100,
   },
   eventInfo: {
     padding: 10,
@@ -345,7 +376,7 @@ const styles = StyleSheet.create({
   },
   chooseLocationButton: {
     position: 'absolute',
-    top: 40, // Position the button at the top right corner
+    top: 20, // Position the button at the top right corner
     right: 20,
     backgroundColor: '#000',
     padding: 10,

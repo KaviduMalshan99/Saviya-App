@@ -8,22 +8,36 @@ import {
   Pressable,
   TextInput,
   StyleSheet,
+  RefreshControl, // Import RefreshControl for pull-to-refresh
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EHomeScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute(); // Use useRoute to access route params
   const moveAnima = new Animated.Value(0);
   const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [bookings, setBookings] = useState({}); // Track booked seats for each event
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [refreshing, setRefreshing] = useState(false); // State to handle refreshing
+
+  // Get selected location from route params (if available)
+  useEffect(() => {
+    if (route.params?.selectedLocation) {
+      setSelectedLocation(route.params.selectedLocation);
+      console.log("Selected location from EventLocationScreen:", route.params.selectedLocation);
+    }
+  }, [route.params?.selectedLocation]);
 
   // Start animation
   useEffect(() => {
     const animation = Animated.loop(
       Animated.timing(moveAnima, {
-        toValue: -30,
+        toValue: 0,
         duration: 2000,
         useNativeDriver: true,
       })
@@ -48,12 +62,12 @@ const EHomeScreen = () => {
         >
           <Ionicons name="notifications-outline" size={24} color="black" />
           <Ionicons
-            onPress={() => navigation.navigate("EPlacesScreen")}
+            onPress={() => navigation.navigate("EventLocationScreen")}
             name="location-outline"
             size={24}
             color="black"
           />
-          <Pressable onPress={() => navigation.navigate("EPlacesScreen")}>
+          <Pressable onPress={() => navigation.navigate("EventLocationScreen")}>
             <Animated.Text
               style={[styles.text, { transform: [{ translateX: moveAnima }] }]}
             >
@@ -66,26 +80,59 @@ const EHomeScreen = () => {
   }, [navigation]);
 
   // Fetch events from backend
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get(
-          "http://172.20.10.2/event-api/events.php"
-        );
-        console.log("Fetched events:", response.data);
-        setEvents(response.data);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get(
+        "http://172.20.10.2/event-api/events.php"
+      );
+      setEvents(response.data);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
 
+  // Load booked seat count from AsyncStorage
+  const loadBookings = async () => {
+    try {
+      const storedEvents = await AsyncStorage.getItem("bookedEvents");
+      if (storedEvents) {
+        const events = JSON.parse(storedEvents);
+        const bookingsMap = {};
+
+        // Count how many users have booked seats for each event
+        events.forEach((event) => {
+          if (bookingsMap[event.title]) {
+            bookingsMap[event.title] += event.seats.length;
+          } else {
+            bookingsMap[event.title] = event.seats.length;
+          }
+        });
+
+        setBookings(bookingsMap); // Set the booked seat count per event
+      }
+    } catch (error) {
+      console.error("Error loading bookings:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchEvents();
+    loadBookings();
   }, []);
 
   // Handle search functionality
-  const filteredEvents = events.filter((event) =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLocation = selectedLocation ? event.location.includes(selectedLocation) : true;
+    return matchesSearch && matchesLocation; // Filter by both search term and selected location
+  });
+
+  // Pull-to-refresh handler
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchEvents(); // Fetch the events again when refreshing
+    setRefreshing(false);
+  };
 
   // Navigate to EventDetailsScreen
   const navigateToDetails = (event) => {
@@ -93,7 +140,7 @@ const EHomeScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       {/* Search Section */}
       <View style={styles.searchSection}>
         <View style={styles.searchHeader}>
@@ -117,44 +164,62 @@ const EHomeScreen = () => {
         </View>
       </View>
 
-      {/* Event Cards */}
-      <View>
-        {filteredEvents.length > 0 ? (
-          filteredEvents.map((event) => (
-            <Pressable
-              key={event.id}
-              onPress={() => navigateToDetails(event)}
-              style={styles.popularEventCard}
-            >
-              <Image
-                style={styles.eventImage}
-                source={{ uri: event.image_url }}
-              />
-              <View style={styles.eventInfo}>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventLocation}>{event.location}</Text>
-                <View style={styles.eventDate}>
-                  <Text style={styles.eventDateText}>
-                    {new Date(event.date).toLocaleDateString()}
+      {/* ScrollView for Event Cards with RefreshControl */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContentContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View>
+          {filteredEvents.length > 0 ? (
+            filteredEvents.map((event) => (
+              <Pressable
+                key={event.id}
+                onPress={() => navigateToDetails(event)}
+                style={styles.popularEventCard}
+              >
+                <Image
+                  style={styles.eventImage}
+                  source={{ uri: event.image_url }}
+                />
+                <View style={styles.eventInfo}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventLocation}>{event.location}</Text>
+                  <Text style={styles.eventLocation}>Time: {event.time}</Text>
+                  <View style={styles.eventDate}>
+                    <Text style={styles.eventDateText}>
+                      {new Date(event.date).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <Text style={styles.eventPrice}>
+                    Ticket Price: Rs. {event.price}
+                  </Text>
+
+                  {/* Show the number of seats booked */}
+                  <Text style={styles.bookedSeats}>
+                    {bookings[event.title]
+                      ? `${bookings[event.title]} seat(s) booked`
+                      : "No seats booked yet"}
                   </Text>
                 </View>
-                <Text style={styles.eventPrice}>
-                  Ticket Price: {event.price}
-                </Text>
-              </View>
-            </Pressable>
-          ))
-        ) : (
-          <Text>No events found</Text>
-        )}
-      </View>
+              </Pressable>
+            ))
+          ) : (
+            <Text>No events found</Text>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Fixed Button at the Bottom */}
       <Pressable
         style={styles.bookedEventsButton}
         onPress={() => navigation.navigate("BookedEventScreen")}
       >
         <Text style={styles.bookedEventsButtonText}>Booked Events</Text>
       </Pressable>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -162,7 +227,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#E0F8FC",
-    padding: 16,
   },
   greetingText: {
     fontSize: 18,
@@ -171,6 +235,7 @@ const styles = StyleSheet.create({
   },
   searchSection: {
     marginVertical: 16,
+    paddingHorizontal: 16,
   },
   searchHeader: {
     flexDirection: "row",
@@ -197,6 +262,10 @@ const styles = StyleSheet.create({
     flex: 1,
     color: "#333",
   },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
   popularEventCard: {
     backgroundColor: "#FFF",
     borderRadius: 10,
@@ -207,7 +276,6 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: 100,
-    height: 100,
     borderRadius: 10,
   },
   eventInfo: {
@@ -229,7 +297,7 @@ const styles = StyleSheet.create({
   },
   eventDate: {
     position: "absolute",
-    top: 10,
+    bottom: 10,
     right: 10,
     backgroundColor: "#E0E0E0",
     padding: 8,
@@ -240,15 +308,22 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "bold",
   },
+  bookedSeats: {
+    marginTop: 8,
+    color: "#007BFF",
+  },
   bookedEventsButton: {
+    position: "absolute",
+    bottom: 10,
+    left: 16,
+    right: 16,
     backgroundColor: "#007BFF",
+    padding: 16,
     borderRadius: 8,
-    padding: 10,
     alignItems: "center",
-    marginTop: 20,
   },
   bookedEventsButtonText: {
-    color: "#fff",
+    color: "#FFF",
     fontSize: 16,
     fontWeight: "bold",
   },

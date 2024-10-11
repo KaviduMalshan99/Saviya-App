@@ -1,26 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
-
-const locations = [
-  { id: 1, title: "Use Current Location", description: "Based on device GPS location" },
-  { id: 2, title: "Colombo", description: "Colombo, Sri Lanka" },
-  { id: 3, title: "Matara", description: "Matara, Sri Lanka" },
-  { id: 4, title: "Kegalle", description: "Kegalle, Sri Lanka" },
-  { id: 5, title: "Kandy", description: "Kandy, Sri Lanka" },
-  { id: 6, title: "Ambalangoda", description: "Ambalangoda, Sri Lanka" },
-];
+import axios from 'axios'; // You can use fetch() or axios for API calls
 
 const EventLocationScreen = () => {
   const navigation = useNavigation();
+  const [locations, setLocations] = useState([]);
+
+  // Fetch locations from the backend
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get("http://172.20.10.2/event-api/get_locations.php");
+        setLocations(response.data); // Update state with fetched locations
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  // const selectLocation = (location) => {
+  //   console.log("Selected location:", location.title);
+  //   navigation.goBack();
+  // };
 
   const selectLocation = (location) => {
-    // Handle the location selection logic here
     console.log("Selected location:", location.title);
-    // You can navigate back or pass the selected location data to the previous screen
-    navigation.goBack();
+    // Pass the selected location back to the EHomeScreen
+    navigation.navigate("EHomeScreen", { selectedLocation: location.title });
   };
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

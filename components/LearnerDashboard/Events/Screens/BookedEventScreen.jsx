@@ -21,7 +21,6 @@ const BookedEventScreen = ({ navigation }) => {
   const [bookedEvents, setBookedEvents] = useState([]);
 
   useEffect(() => {
-    // Fetch booked events from AsyncStorage when the screen is loaded
     const loadBookedEvents = async () => {
       try {
         const storedEvents = await AsyncStorage.getItem('bookedEvents');
@@ -50,7 +49,8 @@ const BookedEventScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Booked Events</Text>
-        <Pressable onPress={() => navigation.navigate('EventCalendar')}>
+        <Pressable onPress={() => navigation.navigate('EventCalendar', { events: bookedEvents })}>
+          {/* Passing the booked events to EventCalendar screen */}
           <Ionicons name="calendar-outline" size={24} color="black" />
         </Pressable>
       </View>
@@ -89,7 +89,10 @@ const BookedEventScreen = ({ navigation }) => {
               <View style={styles.eventDetails}>
                 <Ionicons name="time-outline" size={16} color="#666" />
                 <Text style={styles.eventText}>Time: {event.time}</Text>
-                <Text style={styles.eventText}>Seats: {event.seats.join(", ")}</Text>
+              </View>
+              <View style={styles.eventDetails}>
+                <Ionicons name="location-outline" size={16} color="#666" />
+                <Text style={styles.eventText}>Location: {event.location}</Text>
               </View>
               <View style={styles.eventDetails}>
                 <MaterialCommunityIcons name="seat-outline" size={16} color="#666" />
@@ -157,7 +160,7 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: 100,
-    height: 100,
+    // height: 100,
   },
   eventInfo: {
     flex: 1,
@@ -181,7 +184,7 @@ const styles = StyleSheet.create({
   },
   dateContainer: {
     position: "absolute",
-    top: 8,
+    bottom: 15,
     right: 8,
     backgroundColor: "#E0E0E0",
     borderRadius: 4,

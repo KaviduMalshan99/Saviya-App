@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EventDetailsScreen = () => {
   const route = useRoute();
@@ -16,6 +17,31 @@ const EventDetailsScreen = () => {
 
   // Retrieve event details from the route
   const { event } = route.params;
+
+  const [bookedSeats, setBookedSeats] = useState(0); // Track number of booked seats
+  const totalSeats = 50; // Assume the event has a total of 50 seats (you can modify this)
+
+  useEffect(() => {
+    // Load booked seats from AsyncStorage for the specific event
+    const loadBookedSeats = async () => {
+      try {
+        const storedEvents = await AsyncStorage.getItem("bookedEvents");
+        if (storedEvents) {
+          const events = JSON.parse(storedEvents);
+          const bookedSeatsForEvent = events
+            .filter((e) => e.title === event.title && e.date === event.date)
+            .flatMap((e) => e.seats).length;
+          setBookedSeats(bookedSeatsForEvent); // Set the booked seats count
+        }
+      } catch (error) {
+        console.error("Error loading booked seats:", error);
+      }
+    };
+
+    loadBookedSeats();
+  }, [event.title, event.date]);
+
+  const remainingSeats = totalSeats - bookedSeats; // Calculate remaining seats
 
   return (
     <ScrollView style={styles.container}>
@@ -48,6 +74,16 @@ const EventDetailsScreen = () => {
           We're celebrating our 10th edition of the {event.title}.
         </Text>
 
+        {/* Show remaining seats */}
+        <View style={styles.remainingSeatsContainer}>
+          <Ionicons name="people-outline" size={16} color="gray" />
+          <Text style={styles.remainingSeatsText}>
+            {remainingSeats > 0
+              ? `Remaining Seats: ${remainingSeats}`
+              : "Sold Out"}
+          </Text>
+        </View>
+
         {/* Book Event Button */}
         <Pressable
           style={styles.bookButton}
@@ -56,6 +92,7 @@ const EventDetailsScreen = () => {
               title: event.title,
               date: event.date,
               location: event.location,
+              time: event.time, // Pass the event time here
               price: event.price,
               image_url: event.image_url, // Pass the image URL here
             })
@@ -123,5 +160,15 @@ const styles = StyleSheet.create({
   eventDateText: {
     color: "#333",
     marginLeft: 5, // Space between the icon and the text
+  },
+  remainingSeatsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  remainingSeatsText: {
+    marginLeft: 5,
+    fontSize: 16,
+    color: "#333",
   },
 });

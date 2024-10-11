@@ -1,51 +1,52 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet, Image } from "react-native";
 
-const events = [
-  {
-    id: 1,
-    title: "Giving New Pottery Ideas",
-    date: "12 December, 2024",
-    location: "BMICH, Colon",
-    image: "https://example.com/pottery.jpg",
-  },
-  {
-    id: 2,
-    title: "How to be the best",
-    date: "22 October, 2024",
-    location: "The Taprobane, Colon",
-    image: "https://example.com/howtobethebest.jpg",
-  },
-  {
-    id: 3,
-    title: "Amateur Footwear Design",
-    date: "24 December, 2024",
-    location: "Main Hall, Kegalle",
-    image: "https://example.com/footwear.jpg",
-  },
-];
+// Helper function to group events by date
+const groupEventsByDate = (events) => {
+  return events.reduce((groupedEvents, event) => {
+    const eventDate = new Date(event.date).toLocaleDateString(); // Format date
+    if (!groupedEvents[eventDate]) {
+      groupedEvents[eventDate] = [];
+    }
+    groupedEvents[eventDate].push(event);
+    return groupedEvents;
+  }, {});
+};
 
-const EventCalendar = () => {
+const EventCalendar = ({ route }) => {
+  const { events } = route.params; // Receive events passed from BookedEventScreen
+
+  // Group the events by date
+  const groupedEvents = groupEventsByDate(events);
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Calendar</Text>
+        <Text style={styles.headerText}>Event Calendar</Text>
       </View>
-      {events.map((event) => (
-        <View key={event.id} style={styles.eventContainer}>
-          <Text style={styles.eventDate}>{event.date}</Text>
-          <View style={styles.card}>
-            <Image source={{ uri: event.image }} style={styles.eventImage} />
-            <View style={styles.eventDetails}>
-              <Text style={styles.eventTitle}>{event.title}</Text>
-              <Text style={styles.eventLocation}>{event.location}</Text>
-            </View>
+      {Object.keys(groupedEvents).length > 0 ? (
+        Object.keys(groupedEvents).map((date) => (
+          <View key={date} style={styles.dateSection}>
+            <Text style={styles.eventDate}>{date}</Text>
+            {groupedEvents[date].map((event) => (
+              <View key={event.id} style={styles.card}>
+                <Image source={{ uri: event.image_url }} style={styles.eventImage} />
+                <View style={styles.eventDetails}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventLocation}>{event.location}</Text>
+                </View>
+              </View>
+            ))}
           </View>
-        </View>
-      ))}
+        ))
+      ) : (
+        <Text style={styles.noEventsText}>No booked events available.</Text>
+      )}
     </ScrollView>
   );
 };
+
+export default EventCalendar;
 
 const styles = StyleSheet.create({
   container: {
@@ -61,14 +62,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  eventContainer: {
+  dateSection: {
     paddingHorizontal: 16,
     marginVertical: 8,
   },
   eventDate: {
     fontSize: 16,
     color: "#FF5252",
-    marginBottom: 4,
+    marginBottom: 8,
+    fontWeight: "bold",
   },
   card: {
     flexDirection: "row",
@@ -80,6 +82,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
+    marginBottom: 8,
   },
   eventImage: {
     width: 80,
@@ -100,6 +103,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
+  noEventsText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+    color: "#666",
+  },
 });
-
-export default EventCalendar;

@@ -40,7 +40,7 @@ const SeatIcon = ({ type, selected, booked, onPress }) => {
 const SeatSelectionScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { title, date, location, price, image_url } = route.params; 
+  const { title, date, location, price, time, image_url } = route.params; 
 
   const [selectedSeats, setSelectedSeats] = useState([]); // Store currently selected seats
   const [bookedSeats, setBookedSeats] = useState([]); // Store already booked seats from AsyncStorage
@@ -88,7 +88,7 @@ const SeatSelectionScreen = () => {
       price,
       image_url,
       seats: selectedSeats, 
-      time: "01:30PM", 
+      time,
       orderId: "7376465", 
     };
 

@@ -117,59 +117,52 @@
 //     fontSize: 18,
 //   },
 // });
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, Pressable, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Ionicons from "react-native-vector-icons/Ionicons"; // Ensure you have this installed
-
-const categories = [
-  { id: 1, title: "Pottery", image: require('../Images/potteryF.jpg') },
-  { id: 2, title: "Laundry Soap", image: require('../Images/soapF.jpg') },
-  { id: 3, title: "Footwear", image: require('../Images/footwearF.jpg') },
-  { id: 4, title: "Curd", image: require('../Images/incense.jpg') },
-];
 
 const EventCategoryScreen = () => {
   const navigation = useNavigation();
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [categories, setCategories] = useState([]); // Store categories from the server
 
-  // Toggle the category selection
-  const toggleCategorySelection = (id) => {
-    if (selectedCategories.includes(id)) {
-      setSelectedCategories(selectedCategories.filter((categoryId) => categoryId !== id));
-    } else {
-      setSelectedCategories([...selectedCategories, id]);
-    }
-  };
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://172.20.10.2/event-api/get_categories.php'); // Replace with your server IP or URL
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
 
-  // Navigate to the CategoryDetailsScreen when a category is pressed
+    fetchCategories();
+  }, []);
+
   const navigateToDetails = (category) => {
-    navigation.navigate("CategoryDetailsScreen", { category });
+    // Navigate to CategoryDetailsScreen and pass the selected category, including the image URL
+    navigation.navigate("CategoryDetailsScreen", {
+      category: {
+        ...category,
+        image: category.image_url, // Ensure the image URL is passed correctly
+      },
+    });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Choose Your Event Category</Text>
-      <Text style={styles.subtitle}>
-        Choose your favorite interest to get new shows all in one place.
-      </Text>
+      <Text style={styles.subtitle}>Choose your favorite interest to get new shows all in one place.</Text>
 
       <View style={styles.categoriesContainer}>
         {categories.map((category) => (
           <Pressable
             key={category.id}
-            style={[
-              styles.categoryCard,
-              selectedCategories.includes(category.id) && styles.selectedCard,
-            ]}
+            style={styles.categoryCard}
             onPress={() => navigateToDetails(category)}
           >
-            <Image source={category.image} style={styles.categoryImage} />
+            <Image source={{ uri: category.image_url }} style={styles.categoryImage} />
             <Text style={styles.categoryTitle}>{category.title}</Text>
-            {selectedCategories.includes(category.id) && (
-              <Ionicons name="checkmark-circle" size={24} color="green" style={styles.checkIcon} />
-            )}
           </Pressable>
         ))}
       </View>
@@ -206,15 +199,10 @@ const styles = StyleSheet.create({
     height: 150,
     margin: 10,
     borderRadius: 8,
-    overflow: "hidden",
     backgroundColor: "#FFF",
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,
-  },
-  selectedCard: {
-    borderColor: "green",
-    borderWidth: 2,
   },
   categoryImage: {
     width: "100%",
@@ -224,10 +212,5 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 16,
     marginTop: 8,
-  },
-  checkIcon: {
-    position: "absolute",
-    top: 8,
-    right: 8,
   },
 });
