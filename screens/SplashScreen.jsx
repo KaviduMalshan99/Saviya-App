@@ -6,7 +6,7 @@ const SplashScreen = ({ navigation }) => {
     // Set a timeout to automatically move to the next screen
     setTimeout(() => {
       navigation.replace('Onboarding1'); // Navigate to the first onboarding screen after the splash screen
-    }, 20000); // Adjust the delay as needed (e.g., 3000 for 3 seconds)
+    }, 3000); // Adjust the delay as needed (e.g., 3000 for 3 seconds)
   }, [navigation]);
 
   return (
@@ -35,8 +35,8 @@ const styles = StyleSheet.create({
     
   },
   logo: {
-    width: 200,
-    height: 100, // Customize logo size
+    width: 250,
+    height: 150, // Customize logo size
     marginBottom: 20,
   },
   text: {

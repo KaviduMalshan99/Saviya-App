@@ -31,6 +31,8 @@ import CongratulationsPage from '../components/OtherPages/Conrajuulations';
 import RatingPage from '../components/OtherPages/Rating';
 import paymentSuccess from '../components/OtherPages/PaymentSuccess'
 
+import FreeCoursesPage from '../components/LearnerDashboard/FreeCourses';
+
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -75,6 +77,9 @@ const AppNavigator = () => {
       <Stack.Screen name="CongratulationsPage" component={CongratulationsPage} />
       <Stack.Screen name="Rating" component={RatingPage} />
       <Stack.Screen name="PaymentSuccessPage" component={paymentSuccess} />
+      <Stack.Screen name="FreeCoursesPage" component={FreeCoursesPage} />
+
+    
 
       
       

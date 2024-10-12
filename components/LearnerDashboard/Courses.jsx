@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TextInput, ImageBackground, ScrollView,TouchableOpacity,navigation } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, ImageBackground, ScrollView, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; // Import for search icon and heart icon
 import { getCoursesByCategory } from '../../api'; // Assuming the api.js is in the same folder
 import { useNavigation } from '@react-navigation/native';
-
-
-const sampleImage = 'https://via.placeholder.com/150'; // Sample placeholder image
+import BottomNavbar from '../Common/BottomNavbar';
 
 const Courses = () => {
   const [trendingCourses, setTrendingCourses] = useState([]);
   const [freeCourses, setFreeCourses] = useState([]);
   const [paidCourses, setPaidCourses] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(''); // State for search query
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -30,43 +29,50 @@ const Courses = () => {
       .catch(error => console.error('Error fetching paid courses:', error));
   }, []);
 
+  // Filter courses based on the search query
+  const filterCourses = (courses) => {
+    if (!searchQuery) return courses; // If no search query, return all courses
+    return courses.filter((course) =>
+      course.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
+
   // Render Course Item for Trending Courses (Horizontal)
   const renderTrendingCourseItem = ({ item }) => (
-    <TouchableOpacity onPress={()=>navigation.navigate('CourseDetails', { courseId: item.id })}>
-
-    <View style={styles.horizontalCourseItem}>
-      <Image source={require('../../assets/images/img1.png')} style={styles.horizontalCourseImage} />
-      <Text style={styles.horizontalCourseTitle}>{item.title}</Text>
-      <MaterialCommunityIcons
-        name="heart-outline"
-        size={24}
-        color="red"
-        style={styles.heartIconTrending} // Position the heart icon
-      />
-    </View>      
+    <TouchableOpacity onPress={() => navigation.navigate('CourseDetails', { courseId: item.id })}>
+      <View style={styles.horizontalCourseItem}>
+        <Image source={require('../../assets/images/img1.png')} style={styles.horizontalCourseImage} />
+        <Text style={styles.horizontalCourseTitle}>{item.title}</Text>
+        <MaterialCommunityIcons
+          name="heart-outline"
+          size={24}
+          color="red"
+          style={styles.heartIconTrending} // Position the heart icon
+        />
+      </View>      
     </TouchableOpacity>
   );
 
   // Render Course Item for Free/Paid Courses (Vertical)
   const renderCourseItem = ({ item }) => (
-    <TouchableOpacity onPress={()=>navigation.navigate('CourseDetails', { courseId: item.id })}>
-    <View style={styles.verticalCourseItem}>
-      <Image source={require('../../assets/images/img2.png') } style={styles.verticalCourseImage} />
-      <View style={styles.courseDetailsContainer}>
-        <Text style={styles.verticalCourseTitle}>{item.title}</Text>
-        {item.price ? (
-          <Text style={styles.verticalCoursePrice}>LKR.{item.price}</Text>
-        ) : (
-          <Text style={styles.verticalCoursePrice}>Free</Text>
-        )}
+    <TouchableOpacity onPress={() => navigation.navigate('CourseDetails', { courseId: item.id })}>
+      <View style={styles.verticalCourseItem}>
+        <Image source={require('../../assets/images/img2.png')} style={styles.verticalCourseImage} />
+        <View style={styles.courseDetailsContainer}>
+          <Text style={styles.verticalCourseTitle}>{item.title}</Text>
+          {item.price ? (
+            <Text style={styles.verticalCoursePrice}>LKR.{item.price}</Text>
+          ) : (
+            <Text style={styles.verticalCoursePrice}>Free</Text>
+          )}
+        </View>
+        <MaterialCommunityIcons
+          name="heart-outline"
+          size={24}
+          color="red"
+          style={styles.heartIconVertical} // Position the heart icon for vertical items
+        />
       </View>
-      <MaterialCommunityIcons
-        name="heart-outline"
-        size={24}
-        color="red"
-        style={styles.heartIconVertical} // Position the heart icon for vertical items
-      />
-    </View>
     </TouchableOpacity>
   );
 
@@ -85,6 +91,8 @@ const Courses = () => {
               placeholder="සොයන්න..."
               placeholderTextColor="black"
               style={styles.searchInput}
+              value={searchQuery}
+              onChangeText={(text) => setSearchQuery(text)} // Update search query state
             />
           </View>
 
@@ -95,12 +103,27 @@ const Courses = () => {
               <MaterialCommunityIcons name="chevron-right" size={24} color="black" />
             </TouchableOpacity>
             <FlatList
-              data={trendingCourses}
+              data={filterCourses(trendingCourses)} // Apply search filter to trending courses
               renderItem={renderTrendingCourseItem}
-              keyExtractor={item => item.id.toString()}
+              keyExtractor={(item) => item.id.toString()}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.trendingCourseList} // Ensure items don't shrink
+            />
+          </View>
+
+          {/* My Courses Section (Vertical) */}
+          <View style={styles.freeCoursesSection}>
+            <TouchableOpacity style={styles.titleContainer} onPress={() => navigation.navigate('FreeCoursesPage')}>
+              <Text style={styles.mainTopic}>My Courses</Text>
+              <MaterialCommunityIcons name="chevron-right" size={24} color="black" />
+            </TouchableOpacity>
+            <FlatList
+              data={filterCourses(freeCourses)} // Apply search filter to free courses
+              renderItem={renderCourseItem}
+              keyExtractor={(item) => item.id.toString()}
+              showsVerticalScrollIndicator={false}
+              style={styles.verticalCourseList}
             />
           </View>
 
@@ -111,9 +134,9 @@ const Courses = () => {
               <MaterialCommunityIcons name="chevron-right" size={24} color="black" />
             </TouchableOpacity>
             <FlatList
-              data={freeCourses}
+              data={filterCourses(freeCourses)} // Apply search filter to free courses
               renderItem={renderCourseItem}
-              keyExtractor={item => item.id.toString()}
+              keyExtractor={(item) => item.id.toString()}
               showsVerticalScrollIndicator={false}
               style={styles.verticalCourseList}
             />
@@ -126,15 +149,16 @@ const Courses = () => {
               <MaterialCommunityIcons name="chevron-right" size={24} color="black" />
             </TouchableOpacity>
             <FlatList
-              data={paidCourses}
+              data={filterCourses(paidCourses)} // Apply search filter to paid courses
               renderItem={renderCourseItem}
-              keyExtractor={item => item.id.toString()}
+              keyExtractor={(item) => item.id.toString()}
               showsVerticalScrollIndicator={false}
               style={styles.verticalCourseList}
             />
           </View>
         </View>
       </ScrollView>
+      <BottomNavbar navigation={navigation} />
     </ImageBackground>
   );
 };
@@ -168,14 +192,14 @@ const styles = StyleSheet.create({
     color: 'black', // White text color for the input
     fontSize: 18,
     fontFamily: 'guruogomi1',
-    marginLeft:10
+    marginLeft: 10,
   },
   mainTopic: {
     fontSize: 20, // Increase font size for the main topic
     color: 'black',
     marginBottom: 15,
     marginLeft: 20, // Align with the search bar
-    fontFamily: 'Lato-Bold'
+    fontFamily: 'Lato-Bold',
   },
   titleContainer: {
     flexDirection: 'row',
@@ -189,7 +213,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
   },
-  // Trending Courses (Horizontal)
   trendingSection: {
     marginTop: 20,
   },
@@ -209,7 +232,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 180, // Adjust image height
     borderRadius: 8,
-    marginBottom:2
+    marginBottom: 2,
   },
   horizontalCourseTitle: {
     fontSize: 18,
@@ -217,14 +240,13 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'center',
     fontFamily: 'guruogomi1',
-    padding:10
+    padding: 10,
   },
   heartIconTrending: {
     position: 'absolute',
     top: 10,
     right: 10, // Top right corner of the trending course
   },
-  // Free Courses (Vertical)
   freeCoursesSection: {
     marginTop: 40,
   },
@@ -244,7 +266,7 @@ const styles = StyleSheet.create({
     height: '90%',
     borderRadius: 8,
     marginRight: 10,
-    marginLeft:5
+    marginLeft: 5,
   },
   courseDetailsContainer: {
     flex: 1,
@@ -271,9 +293,9 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     width: '100%',
   },
-  // Paid Courses (Vertical)
   paidCoursesSection: {
     marginTop: 20,
+    marginBottom:50
   },
 });
 
