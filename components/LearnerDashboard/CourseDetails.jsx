@@ -104,7 +104,7 @@ const CourseDetails = () => {
               <MaterialCommunityIcons name="star" size={20} color="gold" />
               <Text style={styles.ratingText}>{course.rating} ({course.ratingCount} 4.3)</Text>
             </View>
-            <Text style={styles.infoText}>Lessons: {course.lessons}</Text>
+            <Text style={styles.infoText}>Lessons: 15</Text>
             <Text style={styles.infoText}>Author: Saviya App</Text>
             <Text style={styles.infoText}>Certificate of Completion</Text>
           </View>
